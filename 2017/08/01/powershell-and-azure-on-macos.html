@@ -1,0 +1,457 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Powershell and Azure on MacOS – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Powershell and Azure on MacOS – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Powershell and Azure on MacOS – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Powershell and Azure on MacOS</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">August 01, 2017</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2017/08/powerapple-1.png" alt="Powershell and Azure on MacOS">
+	</div>
+	
+	<div class="post-content">
+		<p>As a mobile developer 90% of the time I work on a mac. Visual Studio for Mac is an awesome tool to create Xamarin mobile apps. More than not mobile apps are using services. You can use .NET Core to create APIs but deploying them isn’t so easy on a mac. Sure you can use the Azure CLI, but if you are working with mixed teams Powershell seems to be king to deploy towards Azure.</p>
+
+<p>About a year ago Microsoft made Powershell available for MacOs. But that doesn’t mean you can use all of the Modules that are available. Until a few days ago you couldn’t use AzureRM. Now that the AzureRM.NetCore is no longer in preview, it’s time to explain how you can use the power of Powershell and AzureRM on your mac.</p>
+
+<h2 id="installing-powershell">Installing Powershell</h2>
+
+<p>As I couldn’t get the AzureRM modules working on an older version you need to make sure you run the latest version of Powershell for Mac. 
+You can download a .pkg package from <a href="https://github.com/PowerShell/PowerShell">https://github.com/PowerShell/PowerShell</a>.
+Installing is as simple as any other package. Just follow the wizard.</p>
+
+<p>After installing the package you can verify the version of Powershell by opening a terminal window and start Powershell.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start powershell just by typing:</span>
+powershell
+<span class="c"># Once you have the powershell prompt check the version with:</span>
+<span class="nv">$psversiontable</span>
+</code></pre></div></div>
+
+<p>The version I have is v6.0.0-beta4. I couldn’t make AzureRM work with version v6.0.0-beta3 so make sure you have at least version v6.0.0-beta4.</p>
+
+<h2 id="installing-azurerm-modules">Installing AzureRM modules</h2>
+
+<p>Before installing modules you’ll need to know in which directory you want to store your modules.
+Open a Powershell and verify the path where you can store your modules</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># start a powershell session</span>
+powershell
+<span class="c"># verify the path for modules</span>
+<span class="nv">$env</span>:PSModulePath
+</code></pre></div></div>
+
+<p>My path looks like:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/Users/myrootuser/.local/share/powershell/Modules:/usr/local/share/powershell/Modules:/usr/local/microsoft/powershell/6.0.0-beta.4/Modules
+</code></pre></div></div>
+
+<p>I will store my modules in:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/local/microsoft/powershell/6.0.0-beta.4/Modules
+</code></pre></div></div>
+
+<p>To install the AzureRM modules you’ll need to open up a terminal and login as a root user. The instructions come from: <a href="https://www.powershellgallery.com/packages/AzureRM.Netcore/0.9.1">https://www.powershellgallery.com/packages/AzureRM.Netcore/0.9.1</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># login with a admin user</span>
+su myrootuser
+<span class="c"># start a powershell session</span>
+powershell
+Save-Module <span class="nt">-Name</span> AzureRM.Netcore <span class="nt">-Path</span> /usr/local/microsoft/powershell/6.0.0-beta.4/Modules
+Install-Module <span class="nt">-Name</span> AzureRM.Netcore
+</code></pre></div></div>
+
+<p>The path provided in the latest command corresponds with the path you found via $env:PSModulePath</p>
+
+<h2 id="using-the-azurerm-modules">Using the AzureRM modules</h2>
+
+<p>You can close the admin/root session and start a session as normal user.</p>
+
+<p>Verify that the AzureRM modules are available</p>
+
+<pre><code class="language-ps1"># start a powershell session
+powershell
+# list available modules
+Get-Module -ListAvailable
+</code></pre>
+
+<p><img src="/assets/images/2017/08/powershellModules.png" alt="Powershell modules" /></p>
+
+<p>If you try to execute the Login-AzureRmAccount login command to login on Azure and start executing your scripts.</p>
+
+<h2 id="what-if-the-azurerm-modules-are-not-available">What if the AzureRM modules are not available?</h2>
+
+<p>When starting a Powershell session, not all modules are loaded to save memory. Depending on how you installed or stored the modules they won’t be available by default.</p>
+
+<p>So if the Login-AwureRmAccount is not available for you, you can auto load the AzureRm modules when starting a new Powershell session. You can do that by changing your profile.</p>
+
+<p>Search for your profile:</p>
+
+<pre><code class="language-ps1"># start a powershell session
+powershell
+# find your profile file
+$profile
+</code></pre>
+
+<p>My profile is located on:</p>
+
+<pre><code class="language-ps1">/Users/jtourlamain/.config/powershell/Microsoft.PowerShell_profile.ps1
+</code></pre>
+
+<p>If it doesn’t exist you can simply create it.</p>
+
+<p>You can simply import a module by adding “Import-Module MyModuleName” in the file. Because AzureRM has multiple modules you can add them in one command</p>
+
+<pre><code class="language-ps1">Get-Module -ListAvailable AzureRm.* | Import-Module
+</code></pre>
+
+<h2 id="authenticate-to-azure-via-powershell">Authenticate to Azure via Powershell</h2>
+<p>Now you can authenticate via Powershell so can start executing the powershell scripts in your Xamarin solution.</p>
+
+<pre><code class="language-ps1"># start a powershell session
+powershell
+# authenticate 
+Login-AzureRmAccount
+
+WARNING: To sign in, use a web browser to open the page https://aka.ms/devicelogin and enter the
+code LOWVPMJ51 to authenticate.
+</code></pre>
+
+<p>Now open up a browser and go to <a href="https://aka.ms/devicelogin">https://aka.ms/devicelogin</a>, provide the code that you got in your powershell session and you’re good to go!</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Microsoft made powershell and the AzureRM Modules available on MacOS. It will allow us to automate our backend deploys for our Xamarin mobile apps without switching to Windows.</p>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/azure/">azure</a>, 
+				
+			
+				
+				<a href="/tag/powershell/">powershell</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

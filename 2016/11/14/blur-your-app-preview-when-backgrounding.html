@@ -1,0 +1,405 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Blur your app preview when backgrounding – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Blur your app preview when backgrounding – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Blur your app preview when backgrounding – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Blur your app preview when backgrounding</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">November 14, 2016</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2016/11/blur_preview_small.png" alt="Blur your app preview when backgrounding">
+	</div>
+	
+	<div class="post-content">
+		<p>When scrolling through all your open apps on your mobile phone, you get a quick look of what the window will look like when you reactivate the app. For some apps (like banking apps) you don’t want data leaked via the preview image that was taken when the app was backgrounding.</p>
+
+<p>So, here is how you can obscure the preview window when your app is backgrounded.</p>
+
+<h2 id="blurring-the-preview-on-android">Blurring the preview on Android</h2>
+<p>The easiest way to obscure the preview window in Android is by setting two flags in your MainActivity’s OnCreate</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">MainActivity</span> <span class="p">:</span> <span class="n">FormsApplicationActivity</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnCreate</span><span class="p">(</span><span class="n">Bundle</span> <span class="n">bundle</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">base</span><span class="p">.</span><span class="nf">OnCreate</span><span class="p">(</span><span class="n">bundle</span><span class="p">);</span>
+        <span class="n">Window</span><span class="p">.</span><span class="nf">SetFlags</span><span class="p">(</span><span class="n">WindowManagerFlags</span><span class="p">.</span><span class="n">Secure</span><span class="p">,</span> <span class="n">WindowManagerFlags</span><span class="p">.</span><span class="n">Secure</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="blurring-the-preview-on-ios">Blurring the preview on iOS</h2>
+<p>For iOS all the solutions I found didn’t work in all cases. It should be simple, but because I was using Xamarin forms it took me a while to get it working in all cases. I noticed when using a Tabbed layout with a navigation structure, the default blurring mechanism gave some problems. The trick is to find the correct RootViewController before adding the blur.
+In your AppDelegate add the following methods</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="n">UIVisualEffectView</span> <span class="n">_blurView</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnResignActivation</span><span class="p">(</span><span class="n">UIApplication</span> <span class="n">uiApplication</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// First find the correct RootViewController</span>
+    <span class="kt">var</span> <span class="n">window</span> <span class="p">=</span> <span class="n">UIApplication</span><span class="p">.</span><span class="n">SharedApplication</span><span class="p">.</span><span class="n">KeyWindow</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">vc</span> <span class="p">=</span> <span class="n">window</span><span class="p">.</span><span class="n">RootViewController</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">vc</span><span class="p">.</span><span class="n">PresentedViewController</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">vc</span> <span class="p">=</span> <span class="n">vc</span><span class="p">.</span><span class="n">PresentedViewController</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// Add the blur effect</span>
+    <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">blurEffect</span> <span class="p">=</span> <span class="n">UIBlurEffect</span><span class="p">.</span><span class="nf">FromStyle</span><span class="p">(</span><span class="n">UIBlurEffectStyle</span><span class="p">.</span><span class="n">Light</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="n">_blurView</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">UIVisualEffectView</span><span class="p">(</span><span class="n">blurEffect</span><span class="p">);</span>
+        <span class="n">_blurView</span><span class="p">.</span><span class="n">Frame</span> <span class="p">=</span> <span class="n">UIApplication</span><span class="p">.</span><span class="n">SharedApplication</span><span class="p">.</span><span class="n">KeyWindow</span><span class="p">.</span><span class="n">RootViewController</span><span class="p">.</span><span class="n">View</span><span class="p">.</span><span class="n">Bounds</span><span class="p">;</span>
+        <span class="n">vc</span><span class="p">.</span><span class="n">View</span><span class="p">.</span><span class="nf">AddSubview</span><span class="p">(</span><span class="n">_blurView</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnResignActivation</span><span class="p">(</span><span class="n">uiApplication</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnActivated</span><span class="p">(</span><span class="n">UIApplication</span> <span class="n">uiApplication</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">try</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">_blurView</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">_blurView</span><span class="p">.</span><span class="nf">RemoveFromSuperview</span><span class="p">();</span>
+            <span class="n">_blurView</span><span class="p">.</span><span class="nf">Dispose</span><span class="p">();</span>
+            <span class="n">_blurView</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">}</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnActivated</span><span class="p">(</span><span class="n">uiApplication</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="references">References</h2>
+<ul>
+  <li>Find the RootViewController code snippet from <a href="https://forums.xamarin.com/discussion/24689/how-to-acces-the-current-view-uiviewcontroller-from-an-external-service">Adam Kemp</a></li>
+  <li>Blurring on iOS code snippet from <a href="https://gist.github.com/dannycabrera/37566fdb65f56a1aaaa7">Danny Cabrera</a></li>
+</ul>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/mobile/">mobile</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

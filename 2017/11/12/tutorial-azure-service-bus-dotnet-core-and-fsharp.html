@@ -1,0 +1,670 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>This tutorial will get you started with Azure service bus, dotnet core and F# – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="This tutorial will get you started with Azure service bus, dotnet core and F# – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="This tutorial will get you started with Azure service bus, dotnet core and F# – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">This tutorial will get you started with Azure service bus, dotnet core and F#</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">November 12, 2017</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2017/11/fsharpservicebus.png" alt="This tutorial will get you started with Azure service bus, dotnet core and F#">
+	</div>
+	
+	<div class="post-content">
+		<p>With the release of the dotnet 2.0 framework things are really getting interesting. So I tried to combine dotnet core, F# and Azure service bus. Seems reasonable at first, but as F# is quite new to me I struggled to find any tutorial. Apparently everyone is assuming that when you work in F# you’ll be able to figure things out from the C# tutorials. With this tutorial that’s about to change.</p>
+
+<h2 id="create-an-azure-service-bus">Create an Azure Service bus</h2>
+
+<p>First we need our Service Bus. Go to the <a href="https://portal.azure.com">azure portal</a></p>
+
+<p>Click on the new button and search for “Service Bus” and click “Create”</p>
+
+<p><img src="/assets/images/2017/11/sb01.png" alt="Create an Azure service bus" /></p>
+
+<p>I’ll assume you know the drill to complete the wizard. Here is what I took:</p>
+
+<p><img src="/assets/images/2017/11/sb02.png" alt="Service bus namespace" /></p>
+
+<p>Once the Service bus is created you’ll find it under the resource group you defined.</p>
+
+<p><img src="/assets/images/2017/11/sb03.png" alt="Service bus" /></p>
+
+<p>Before we can start using the service bus, you need to create a queue. I named the queue “demoqueue”. You can leave the other default settings.</p>
+
+<p><img src="/assets/images/2017/11/sb04.png" alt="create queue" /></p>
+
+<p>The last thing to do is to get the Service bus connectionstring. Click on the “Shared access policies” of the service bus (make sure you’re on the service bus pane and not the queue pane). Click on the policy “RootManageSharedAccessKey” to reveal the connection string.</p>
+
+<p><img src="/assets/images/2017/11/sb05.png" alt="Service bus connection string" /></p>
+
+<p>The Azure side is all set up.</p>
+
+<h2 id="create-a-dotnet-core-solution">Create a dotnet core solution</h2>
+
+<p>You can use Visual Studio to create .NET Core solutions, but an editor as VS Code is cross platorm and is quite fast to work with. I used VS Code to get the job done, but for the Visual Studio users we’ll create a solution file as well.</p>
+
+<p>Create a new directory “SbDemo”
+Next we’ll create a solution file via the dotnet CLI:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln <span class="nt">--name</span> DevProtocol.Azure.SbDemo
+</code></pre></div></div>
+
+<p>Create 2 applications. The SbPush will push messages on our service bus, the SbReceive will receive them.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new console <span class="nt">-lang</span> F# <span class="nt">--name</span> DevProtocol.Azure.SbDemo.SbPush
+dotnet new console <span class="nt">-lang</span> F# <span class="nt">--name</span> DevProtocol.Azure.SbDemo.SbReceive
+</code></pre></div></div>
+
+<p>Add the projects to your solution file</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet sln add DevProtocol.Azure.SbDemo.SbPush<span class="se">\D</span>evProtocol.Azure.SbDemo.SbPush.fsproj
+dotnet sln add DevProtocol.Azure.SbDemo.SbReceive<span class="se">\D</span>evProtocol.Azure.SbDemo.SbReceive.fsproj
+</code></pre></div></div>
+
+<h2 id="push-messages-to-your-service-bus">Push messages to your Service bus</h2>
+
+<p>We’ll start off with pushing messages to the queue.
+Open up the project with VSCode</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>code <span class="nb">.</span>
+</code></pre></div></div>
+
+<h3 id="add-the-service-bus-nuget">Add the Service bus Nuget</h3>
+
+<p>Open your project file DevProtocol.Azure.SbDemo.SbPush.fsproj. You’ll notice an ItemGroup that contains the files in your project (currently only Program.fs). We’ll add a NuGet reference by adding a second ItemGroup</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Azure.ServiceBus"</span> <span class="na">Version=</span><span class="s">"2.0.0"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<p>Now you can open up the build in terminal in VSCode (shortcut: CTRL+`) and restore the package(s). Once the package is restored you can get intellisense.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet restore
+</code></pre></div></div>
+
+<h3 id="adding-files-to-the-project">Adding files to the project</h3>
+
+<p>Add 2 new files (Sb.fs and Data.fs) to the SbPush project and register them in the DevProtocol.Azure.SbDemo.SbPush.fsproj file. Add them in the existing ItemGroup where the Program.fs file is already included. Make sure you have the same file order as defined below as he file order in F# is important:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"Data.fs"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"Sb.fs"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"Program.fs"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<h3 id="the-data">The data</h3>
+
+<p>The Data.fs file is simple. We’ll use a list of integers to push to the service bus</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nc">SbPush</span>
+
+<span class="k">module</span> <span class="nc">Data</span> <span class="p">=</span>
+    <span class="k">let</span> <span class="n">getData</span><span class="bp">()</span> <span class="p">=</span>
+        <span class="k">let</span> <span class="n">myData</span> <span class="p">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">..</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">myData</span> <span class="p">|&gt;</span>
+        <span class="nn">List</span><span class="p">.</span><span class="n">map</span> <span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="sending-messages">Sending messages</h3>
+
+<p>The Sb.fs file is a bit more complex. First we need to add the <strong>Microsoft.Azure.ServiceBus</strong> namespace</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nc">ServiceBus</span>
+</code></pre></div></div>
+
+<p>In the Sb module we define our connectionstring we got from the Azure portal earlier on and the queuename</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nc">SbPush</span>
+
+<span class="k">open</span> <span class="nn">System</span><span class="p">.</span><span class="nc">Text</span>
+<span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nc">ServiceBus</span>
+
+<span class="k">module</span> <span class="nc">Sb</span> <span class="p">=</span>
+    <span class="k">let</span> <span class="n">connectionstring</span> <span class="p">=</span> <span class="s2">"&lt;your connectionstring&gt;"</span>
+    <span class="k">let</span> <span class="n">queuePath</span> <span class="p">=</span> <span class="s2">"&lt;your queuename&gt;"</span>
+</code></pre></div></div>
+
+<p>In the same Sb module we now can create a sendData method that has a list of strings as input (defined by the parameter data). First we create a queueclient with our connectionstring and queuepath.</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">sendData</span> <span class="n">data</span> <span class="p">=</span>
+        <span class="k">let</span> <span class="n">queueClient</span> <span class="p">=</span> <span class="nc">QueueClient</span><span class="p">(</span><span class="n">connectionstring</span><span class="p">,</span> <span class="n">queuePath</span><span class="p">)</span>    
+</code></pre></div></div>
+
+<p>The queueClient has a SendAsync method. So we’ll define an async sendMessage that will print out our message to the console and then send it via the queueclient. Unlike C#, the F# methods don’t have the async keyword in the method declaration, but around the async workflow. We capture the result of the async task with a “let!” instead of a normal “let”. Note that an async workflow contains the return keyword.</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">sendMessage</span> <span class="p">(</span><span class="n">queueClient</span><span class="p">:</span><span class="nc">IQueueClient</span><span class="p">)</span> <span class="p">(</span><span class="n">messageText</span><span class="p">:</span><span class="kt">string</span><span class="p">)</span> <span class="p">=</span>
+    <span class="n">async</span> <span class="p">{</span>
+        <span class="n">printfn</span> <span class="s2">"%s"</span> <span class="n">messageText</span>
+        <span class="k">let</span> <span class="n">message</span> <span class="p">=</span> <span class="nc">Message</span><span class="p">(</span><span class="nn">Encoding</span><span class="p">.</span><span class="nn">UTF8</span><span class="p">.</span><span class="nc">GetBytes</span> <span class="n">messageText</span><span class="p">)</span>
+        <span class="k">let</span><span class="o">!</span> <span class="n">result</span> <span class="p">=</span> <span class="n">queueClient</span><span class="p">.</span><span class="nc">SendAsync</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="p">}</span>   
+</code></pre></div></div>
+
+<p>The only thing we need to do now is loop over our input list (named data) and send every string via the sendMessage method and close the connection of the queueClient:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">async</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">result</span> <span class="p">=</span>  <span class="nn">List</span><span class="p">.</span><span class="n">iter</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">sendMessage</span> <span class="n">queueClient</span> <span class="n">x</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">RunSynchronously</span><span class="p">)</span> <span class="n">data</span>
+    <span class="n">queueClient</span><span class="p">.</span><span class="nc">CloseAsync</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span>
+    <span class="p">|&gt;</span> <span class="n">ignore</span>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>So the Sb.fs file looks like:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nc">SbPush</span>
+
+<span class="k">open</span> <span class="nn">System</span><span class="p">.</span><span class="nc">Text</span>
+<span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nc">ServiceBus</span>
+
+<span class="k">module</span> <span class="nc">Sb</span> <span class="p">=</span>
+    <span class="k">let</span> <span class="n">connectionstring</span> <span class="p">=</span> <span class="s2">"&lt;your connectionstring&gt;"</span>
+    <span class="k">let</span> <span class="n">queuePath</span> <span class="p">=</span> <span class="s2">"&lt;your queuename&gt;"</span>
+
+    <span class="k">let</span> <span class="n">sendData</span> <span class="n">data</span> <span class="p">=</span>
+        <span class="k">let</span> <span class="n">queueClient</span> <span class="p">=</span> <span class="nc">QueueClient</span><span class="p">(</span><span class="n">connectionstring</span><span class="p">,</span> <span class="n">queuePath</span><span class="p">)</span>    
+        <span class="k">let</span> <span class="n">sendMessage</span> <span class="p">(</span><span class="n">queueClient</span><span class="p">:</span><span class="nc">IQueueClient</span><span class="p">)</span> <span class="p">(</span><span class="n">messageText</span><span class="p">:</span><span class="kt">string</span><span class="p">)</span> <span class="p">=</span>
+            <span class="n">async</span> <span class="p">{</span>
+                <span class="n">printfn</span> <span class="s2">"%s"</span> <span class="n">messageText</span>
+                <span class="k">let</span> <span class="n">message</span> <span class="p">=</span> <span class="nc">Message</span><span class="p">(</span><span class="nn">Encoding</span><span class="p">.</span><span class="nn">UTF8</span><span class="p">.</span><span class="nc">GetBytes</span> <span class="n">messageText</span><span class="p">)</span>
+                <span class="k">let</span><span class="o">!</span> <span class="n">result</span> <span class="p">=</span> <span class="n">queueClient</span><span class="p">.</span><span class="nc">SendAsync</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span>
+                <span class="k">return</span> <span class="n">result</span>
+            <span class="p">}</span>            
+        <span class="n">async</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">result</span> <span class="p">=</span>  <span class="nn">List</span><span class="p">.</span><span class="n">iter</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">sendMessage</span> <span class="n">queueClient</span> <span class="n">x</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">RunSynchronously</span><span class="p">)</span> <span class="n">data</span>
+            <span class="n">queueClient</span><span class="p">.</span><span class="nc">CloseAsync</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span>
+            <span class="p">|&gt;</span> <span class="n">ignore</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Note that the sendMessage method is a function defined within the sendData function. As functions in F# are first-class citizens, we can use it to restrict the scope of a function.</p>
+
+<h3 id="put-it-together">Put it together</h3>
+
+<p>In the Program.fs file we send our data via the service bus</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="nc">System</span>
+<span class="k">open</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nn">SbPush</span><span class="p">.</span><span class="nc">Sb</span>
+<span class="k">open</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nn">SbPush</span><span class="p">.</span><span class="nc">Data</span>
+
+<span class="p">[&lt;</span><span class="nc">EntryPoint</span><span class="p">&gt;]</span>
+<span class="k">let</span> <span class="n">main</span> <span class="n">argv</span> <span class="p">=</span>
+    <span class="n">printfn</span> <span class="s2">"Start sending messages"</span>
+    <span class="n">sendData</span> <span class="p">(</span><span class="n">getData</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">sprintf</span> <span class="s2">"%s%A"</span> <span class="s2">"Message"</span> <span class="n">x</span> <span class="o">))</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">RunSynchronously</span>
+    <span class="n">printfn</span> <span class="s2">"Ended sending messages"</span>
+    <span class="mi">0</span>
+</code></pre></div></div>
+
+<h3 id="verify-the-result">Verify the result</h3>
+
+<p>Now build the DevProtocol.Azure.SbDemo.SbPush project. cd into the project folder and execute</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet build
+dotnet run
+</code></pre></div></div>
+
+<p>The console will output Message11 till Message20. Now we can already verify if our messages arrived on the queue. Open up the azure portal and go to the queue overview. You’ll notice that 10 messages arrived</p>
+
+<p><img src="/assets/images/2017/11/sb06.png" alt="Messages on the queue" /></p>
+
+<h2 id="receive-messages-from-your-service-bus">Receive messages from your Service bus</h2>
+
+<p>Now that we can push messages on our Service bus, you might get excited to get them back.</p>
+
+<h3 id="add-the-service-bus-nuget-1">Add the Service bus Nuget</h3>
+
+<p>Open up the DevProtocol.Azure.SbDemo.SbReceive.fsproj file and add the Service bus reference:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Azure.ServiceBus"</span> <span class="na">Version=</span><span class="s">"2.0.0"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<h3 id="add-a-file-to-the-project">Add a file to the project</h3>
+
+<p>Add a new file (Sb.fs) to the SbPush project and register it in the DevProtocol.Azure.SbDemo.SbReceive.fsproj file. Add it in the existing ItemGroup where the Program.fs file is already included. Make sure you have the same file order as defined below as he file order in F# is important:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"Sb.fs"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"Program.fs"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<h3 id="receiving-messages">Receiving messages</h3>
+
+<p>To receive messages we first add the <strong>Microsoft.Azure.ServiceBus</strong> namespace</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nc">ServiceBus</span>
+</code></pre></div></div>
+
+<p>In the Sb module we define jus like we dit for pushing messages our connectionstring we got from the Azure portal earlier on and the queuename</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nc">SbReceive</span>
+
+<span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nc">ServiceBus</span>
+<span class="k">open</span> <span class="nn">System</span><span class="p">.</span><span class="nc">Threading</span>
+<span class="k">open</span> <span class="nn">System</span><span class="p">.</span><span class="nc">Text</span>
+<span class="k">open</span> <span class="nn">System</span><span class="p">.</span><span class="nn">Threading</span><span class="p">.</span><span class="nc">Tasks</span>
+
+<span class="k">module</span> <span class="nc">Sb</span> <span class="p">=</span>
+    <span class="k">let</span> <span class="n">connectionstring</span> <span class="p">=</span> <span class="s2">"&lt;your connectionstring&gt;"</span>
+    <span class="k">let</span> <span class="n">queuePath</span> <span class="p">=</span> <span class="s2">"&lt;your queuename&gt;"</span>
+</code></pre></div></div>
+
+<p>Now we define the method to receive the data</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">receiveData</span><span class="bp">()</span> <span class="p">=</span> 
+    <span class="k">let</span> <span class="n">queueClient</span> <span class="p">=</span> <span class="nc">QueueClient</span><span class="p">(</span><span class="n">connectionstring</span><span class="p">,</span> <span class="n">queuePath</span><span class="p">)</span> 
+    <span class="k">let</span> <span class="n">exceptionReceivedHandler</span> <span class="p">(</span><span class="n">args</span><span class="p">:</span><span class="nc">ExceptionReceivedEventArgs</span><span class="p">)</span> <span class="p">=</span>
+        <span class="n">printfn</span> <span class="s2">"Got an exception: %A"</span> <span class="n">args</span><span class="p">.</span><span class="nc">Exception</span>
+        <span class="nn">Task</span><span class="p">.</span><span class="nc">CompletedTask</span>
+    <span class="k">let</span> <span class="n">processMessage</span> <span class="p">(</span><span class="n">message</span><span class="p">:</span><span class="nc">Message</span><span class="p">)</span> <span class="p">(</span><span class="n">token</span><span class="p">:</span><span class="nc">CancellationToken</span><span class="p">)</span> <span class="p">=</span>
+            <span class="n">printfn</span> <span class="s2">"Received message: %s"</span> <span class="p">(</span><span class="nn">Encoding</span><span class="p">.</span><span class="nn">UTF8</span><span class="p">.</span><span class="nc">GetString</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="nc">Body</span><span class="o">))</span>
+            <span class="n">queueClient</span><span class="p">.</span><span class="nc">CompleteAsync</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="nn">SystemProperties</span><span class="p">.</span><span class="nc">LockToken</span><span class="o">)|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span> <span class="p">|&gt;</span> <span class="n">ignore</span>
+            <span class="nn">Task</span><span class="p">.</span><span class="nc">CompletedTask</span>
+    <span class="k">let</span> <span class="n">msgOptions</span> <span class="p">=</span> <span class="k">new</span> <span class="nc">MessageHandlerOptions</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">exceptionReceivedHandler</span><span class="p">(</span><span class="n">x</span><span class="o">))</span>
+    <span class="n">msgOptions</span><span class="p">.</span><span class="nc">AutoComplete</span> <span class="p">&lt;-</span> <span class="bp">false</span>
+    <span class="k">let</span> <span class="n">messagehandler</span> <span class="p">=</span> <span class="n">queueClient</span><span class="p">.</span><span class="nc">RegisterMessageHandler</span><span class="p">(</span><span class="n">processMessage</span><span class="p">,</span> <span class="n">msgOptions</span><span class="p">)</span>
+    <span class="n">messagehandler</span> <span class="p">|&gt;</span> <span class="n">ignore</span>
+</code></pre></div></div>
+
+<h3 id="put-it-together-1">Put it together</h3>
+
+<p>From the main method in the Program.fs file we’ll start listening for message.</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="nc">System</span>
+<span class="k">open</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Azure</span><span class="p">.</span><span class="nn">SbDemo</span><span class="p">.</span><span class="nc">SbReceive</span>
+
+<span class="p">[&lt;</span><span class="nc">EntryPoint</span><span class="p">&gt;]</span>
+<span class="k">let</span> <span class="n">main</span> <span class="n">argv</span> <span class="p">=</span>
+    <span class="n">printfn</span> <span class="s2">"Start receiving messages"</span>
+    <span class="nn">Sb</span><span class="p">.</span><span class="n">receiveData</span><span class="bp">()</span>
+    <span class="nn">Console</span><span class="p">.</span><span class="nc">ReadLine</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="n">ignore</span>
+    <span class="mi">0</span>
+</code></pre></div></div>
+
+<h3 id="verify-the-result-1">Verify the result</h3>
+
+<p>Now build the DevProtocol.Azure.SbDemo.SbReceive project. cd into the project folder and execute</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet build
+dotnet run
+</code></pre></div></div>
+
+<p>Now you’ll receive all your messages back in the console. Go back to the portal and verify your queue messages. The count will be 0 again!</p>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+
+<p>Setting up a Service bus in Azure is really a breeze. With the knowledge of some dotnet CLI commands you can quickly setup a new dotnet core project even in F#. Now there’s at least one more tutorial to get you started with F# and off course dotnet core and Azure as well.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<p>As Andrii Chebukin pointed out in a comment to this post, you can optimise the code by using FusionTasks.
+First add a packate reference in the DevProtocol.Azure.SbDemo.SbReceive.fsproj file and the DevProtocol.Azure.SbDemo.SbPush.fsproj file</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"FSharp.Control.FusionTasks.FS41"</span> <span class="na">Version=</span><span class="s">"1.1.0"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Azure.ServiceBus"</span> <span class="na">Version=</span><span class="s">"2.0.0"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<p>Now we basically can get rid of the “Async.AwaitTask” statements.</p>
+
+<p>As a result a code block like</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">async</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">result</span> <span class="p">=</span>  <span class="nn">List</span><span class="p">.</span><span class="n">iter</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">sendMessage</span> <span class="n">queueClient</span> <span class="n">x</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">RunSynchronously</span><span class="p">)</span> <span class="n">data</span>
+    <span class="n">queueClient</span><span class="p">.</span><span class="nc">CloseAsync</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">AwaitTask</span>
+    <span class="p">|&gt;</span> <span class="n">ignore</span>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>becomes</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">async</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">tasks</span> <span class="p">=</span> <span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="k">fun</span> <span class="n">x</span> <span class="p">-&gt;</span> <span class="n">sendMessage</span> <span class="n">queueClient</span> <span class="n">x</span><span class="p">)</span> <span class="n">data</span>
+    <span class="k">let</span><span class="o">!</span> <span class="n">result</span> <span class="p">=</span> <span class="nn">Async</span><span class="p">.</span><span class="nc">Parallel</span> <span class="n">tasks</span>
+    <span class="k">do</span><span class="o">!</span> <span class="n">queueClient</span><span class="p">.</span><span class="nc">CloseAsync</span><span class="bp">()</span>
+    <span class="k">return</span> <span class="n">result</span>
+        <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Andril was kind enough to send me a pull request with a code update to use FusionTasks. So, definitely check out the code on GitHub.</p>
+
+<h2 id="download">Download</h2>
+
+<p>Download the code from <a href="https://github.com/jtourlamain/DevProtocol.Azure.SbDemo">my github</a>.</p>
+
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/azure/">azure</a>, 
+				
+			
+				
+				<a href="/tag/fsharp/">fsharp</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

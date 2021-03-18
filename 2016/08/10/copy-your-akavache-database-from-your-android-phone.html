@@ -1,0 +1,386 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Copy your Akavache database from your Android phone – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Copy your Akavache database from your Android phone – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Copy your Akavache database from your Android phone – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Copy your Akavache database from your Android phone</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">August 10, 2016</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2016/08/akavache.png" alt="Copy your Akavache database from your Android phone">
+	</div>
+	
+	<div class="post-content">
+		<p>Akavache is an awesome library to use when it comes to caching. It’s fast, cross platform and it abstracts the complexity of working correctly and fast with sqlite.</p>
+
+<p>Sometimes you need to verify the exact data that is stored. You can write some code in your app to read the data and show it on your screen, but on Android there is a faster way. You can copy the database to your computer.</p>
+
+<h2 id="search-the-database-location">Search the database location</h2>
+<p>Open an Android SDK prompt (in Xamarin Studio Tools &gt; Open Android SDK Command Prompt…). Open a shell to your device and look for the database. Normally you can find the database “blobs.db” in the folder “cache”.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adb shell
+run-as your.package.name 
+<span class="c"># ex: com.devprotocol.xam.mobiledemo</span>
+<span class="nb">cd </span>cache
+<span class="nb">ls</span>
+</code></pre></div></div>
+
+<p>If you have 3 blobs files (blobs.db, blobs.db-shm and blobs.db-wal) you’ll need to copy them all to get all the data.</p>
+
+<p>Now that we know where we can find the database, we can exit the shell</p>
+
+<p>If you are still in the shell, exit the shell</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>shell@bullhead:/data/data/your.package.name <span class="nv">$ </span><span class="nb">exit
+</span>shell@bullhead:/ <span class="nv">$ </span><span class="nb">exit</span>
+</code></pre></div></div>
+
+<h2 id="copy-your-akavache-database">Copy your Akavache database</h2>
+<p>Now in the Android command prompt copy the file to the sdcard of the device</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adb <span class="nt">-d</span> shell <span class="s2">"run-as your.package.name cp cache/blobs.db /sdcard"</span>
+</code></pre></div></div>
+
+<p>Copy the file to your computer. The following command will copy the blobs.db file from the sdcard of your Android device to the temp folder in your home directory if you’re working with a mac (if you’re working with a PC change the path accordingly)</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adb pull /sdcard/blobs.db ~/temp
+</code></pre></div></div>
+
+<h2 id="explore-your-database">Explore your database</h2>
+<p>You can now start exploring the database with a the <a href="https://github.com/paulcbetts/AkavacheExplorer">Akavache explorer</a> or another sqlite tool.</p>
+
+<hr />
+<p><em>info</em>:</p>
+
+<ul>
+  <li>Akavache can be found on: <a href="https://github.com/akavache/Akavache">https://github.com/akavache/Akavache</a></li>
+  <li>Image comes from <a href="https://camo.githubusercontent.com/351d64d00103a2a25b2f52f8a520397c2ec545a9/687474703a2f2f662e636c2e6c792f6974656d732f32523364316f3132326d3039304b30573038314c2f416b6176616368652e706e67">https://github.com/akavache/Akavache</a></li>
+</ul>
+
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/mobile/">mobile</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

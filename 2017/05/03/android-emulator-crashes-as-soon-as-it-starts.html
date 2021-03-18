@@ -1,0 +1,376 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Android emulator crashes as soon as it starts – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Android emulator crashes as soon as it starts – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Android emulator crashes as soon as it starts – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Android emulator crashes as soon as it starts</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">May 03, 2017</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2017/05/androiddocker.png" alt="Android emulator crashes as soon as it starts">
+	</div>
+	
+	<div class="post-content">
+		<p>After a complete reinstall of my mac and Xamarin Studio, I was quite surprised to see my Android simulator die on startup. No messages where displayed in the XS “Error” pad or “Deploying to device” pad. Just “Execution failed”.</p>
+
+<h3 id="the-problem">The problem</h3>
+
+<p>I opened up the AVD manager and started an emulator manually. The result was the same, but at least I had some feedback:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HAX is working and emulator runs <span class="k">in </span>fast virt mode.
+emulator: Listening <span class="k">for </span>console connections on port: 5554
+emulator: Serial number of this emulator <span class="o">(</span><span class="k">for </span>ADB<span class="o">)</span>: emulator-5554
+Failed to <span class="nb">sync </span>vcpu reg
+emulator: ERROR: Unfortunately, there<span class="s1">'s an incompatibility between HAXM hypervisor and VirtualBox 4.3.30+ which doesn'</span>t allow multiple hypervisors to co-exist.  It is being actively worked on<span class="p">;</span> you can find out more about the issue at http://b.android.com/197915 <span class="o">(</span>Android<span class="o">)</span> and https://www.virtualbox.org/ticket/14294 <span class="o">(</span>VirtualBox<span class="o">)</span>
+</code></pre></div></div>
+
+<p>After searching the web, it seems that the Android emulator isn’t so happy when docker is running on your machine. Turning off docker when starting an emulator is a workaround. Yes, you really need to “quit” docker. Even when no instance is running you can’t start an emulator.</p>
+
+<h2 id="fixing-the-problem">Fixing the problem</h2>
+
+<p>Installing HAXM 6.1.1 seems to solve the problem. Only, when I installed it via the Android SDK Manager I still got the same issues. When installed via the Android SDK Manager, the necessary files are made available in the folder:</p>
+
+<p>/Users/$username$/Library/Developer/Xamarin/android-sdk-macosx/extras/intel/Hardware_Accelerated_Execution_Manager</p>
+
+<p>Running the IntelHAXM_6.1.1.dmg installer again (although I got the message it was already installed) solved the problem.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://b.android.com/197915">http://b.android.com/197915</a></li>
+  <li><a href="https://github.com/moby/moby/issues/24530">https://github.com/moby/moby/issues/24530</a></li>
+  <li><a href="https://forums.docker.com/t/cant-using-docker-for-mac-with-android-emulator-haxm/8939/12">https://forums.docker.com/t/cant-using-docker-for-mac-with-android-emulator-haxm/8939/12</a></li>
+</ul>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/docker/">docker</a>, 
+				
+			
+				
+				<a href="/tag/mobile/">mobile</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

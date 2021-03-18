@@ -1,0 +1,508 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>OAuth without Xamarin.Auth – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="OAuth without Xamarin.Auth – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="OAuth without Xamarin.Auth – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">OAuth without Xamarin.Auth</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">January 26, 2017</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2017/01/OAuth.png" alt="OAuth without Xamarin.Auth">
+	</div>
+	
+	<div class="post-content">
+		<p>When you write enterprise mobile applications you’re always confronted with authentication. There are a lot of examples that show you how you can authorize the user with Facebook. I don’t know about other countries, but in Belgium enterprise companies don’t let you login on their corporate environment with your Facebook account. You can use Xamarin.Auth for authorization with other services than Facebook, but if the authorization flow is a bit different, you can’t use it anymore.</p>
+
+<h2 id="what-about-adal-and-msal">What about ADAL and MSAL?</h2>
+<p>Microsoft create 2 libs you can use for mobile OAuth 2.0: ADAL (Azure Active Directory Authentication Libraries) and their new library MSAL (Microsoft Authentication Library). The libraries have been in alpha like forever. It doesn’t mean that they don’t work (Google mail has been in beta for what? a decade?), but as with Xamarin.Auth, you can’t use them to authorize all services. I needed to authorize with VSTS, but couldn’t get it to work.</p>
+
+<h2 id="an-oauth-lib-that-always-works">An OAuth lib that always works</h2>
+<p>OAuth makes use of web requests to do its thing. So Xamarin.Auth, ADAL, MSAL are all creating an url with the data you provide them and they send the web request to the server.</p>
+
+<h3 id="identitymodel">Identitymodel</h3>
+<p>Identitymodel is a library that can work with your PCL and makes the authorization request and response quite easy. The library was made by Dominick Baier and Brock Allen (the same guys that created  <a href="https://github.com/IdentityServer">IdentityServer</a>). The library also contains the necessary classes for your token request. For some services (like VSTS) you need to add additional data in the request which you can do with Identitymodel.</p>
+
+<h2 id="xamarin-oauth-20-vsts-and-identitymodel">Xamarin, OAuth 2.0, VSTS and Identitymodel</h2>
+<p>We’ll create a small app <strong>AuthDemo</strong> that requests an AccessToken to work with the VSTS API.</p>
+
+<p>In their document <a href="https://www.visualstudio.com/en-us/docs/integrate/get-started/auth/oauth">Authorize access to REST APIs with OAuth 2.0</a> Microsoft describes how you can get started. In this blog I’ll describe just the topics we need for the mobile demo.</p>
+
+<h3 id="register-your-app">Register your app</h3>
+<p>You need to let VSTS know that you’ll create an app that will make use of the API and that your app needs the necessary permissions to act on behalf of the authorized user.
+Go to <a href="https://app.vssps.visualstudio.com/app/register">https://app.vssps.visualstudio.com/app/register</a>, login and register your app.
+For AuthDemo I’ve used:
+<img src="/assets/images/2017/01/authdemo_appregistration.png" alt="" />
+Next you’ll get all the info you need to setup the Oauth 2.0 flow:
+<img src="/assets/images/2017/01/authdemo_appregistrationresult.png" alt="" /></p>
+<h3 id="the-configuration-file">The configuration file</h3>
+<p>For your convenience you can place all the configuration information for OAuth in 1 file. All the information was gathered in the previous steps.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">DevProtocol.Xam.Demos.AuthDemo.Configuration</span>
+<span class="p">{</span>
+	<span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">ApiKeys</span>
+	<span class="p">{</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">ClientId</span> <span class="p">=</span> <span class="s">"APP-ID-FROM-VSTS"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">ClientSecret</span> <span class="p">=</span> <span class="s">"APP-SECRET-FROM-VSTS"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RedirectUrl</span> <span class="p">=</span> <span class="s">"YOUR-REDIRECT-URL"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">Scope</span> <span class="p">=</span> <span class="s">"vso.identity vso.profile"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">AuthorizeUrl</span> <span class="p">=</span> <span class="s">"https://app.vssps.visualstudio.com/oauth2/authorize"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">AccessTokenUrl</span> <span class="p">=</span> <span class="s">"https://app.vssps.visualstudio.com/oauth2/token"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">BaseAuthorizationUrl</span> <span class="p">=</span> <span class="s">"https://app.vssps.visualstudio.com/oauth2"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">ApiVersion</span> <span class="p">=</span> <span class="s">"2.0"</span><span class="p">;</span>
+		<span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">AccessToken</span> <span class="p">=</span> <span class="s">"access_token"</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="adding-identitymodel">Adding Identitymodel</h3>
+<p>Identitymodel is quite up to date. As of version 2 they target netstandard 1.3. With Xamarin Studio we still can’t make netstandard libs (that will soon change). For now we’re still stuck with PCL. Make sure the profile of your PCL is set to Profile 78. Add the Identitymodel Nuget v1.13.1 to your PCL</p>
+
+<h3 id="adding-the-view">Adding the view</h3>
+
+<p>The LoginPage.xaml is very simple. It contains just a WebView. The source of the webview is bound to our ViewModel. It’s a twoway binding so we can verify if our redirect url is called at the end of the authorization process:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;ContentPage</span>
+    <span class="na">xmlns=</span><span class="s">"http://xamarin.com/schemas/2014/forms"</span>
+    <span class="na">xmlns:x=</span><span class="s">"http://schemas.microsoft.com/winfx/2009/xaml"</span>
+    <span class="na">x:Class=</span><span class="s">"DevProtocol.Xam.Demos.AuthDemo.Pages.LoginPage"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;ContentPage.Content&gt;</span>
+        <span class="nt">&lt;WebView</span> <span class="na">x:Name=</span><span class="s">"webAuth"</span> 
+            <span class="na">Source=</span><span class="s">"{Binding AuthUrl, Mode=TwoWay}"</span>
+            <span class="na">HorizontalOptions=</span><span class="s">"FillAndExpand"</span>
+            <span class="na">VerticalOptions=</span><span class="s">"FillAndExpand"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/ContentPage.Content&gt;</span>
+<span class="nt">&lt;/ContentPage&gt;</span>
+</code></pre></div></div>
+
+<h3 id="get-an-authorization-code">Get an Authorization Code</h3>
+<p>First we need an authorization code. In our viewmodel we’ll make use of the AuthorizeRequest (part of Identitymodel) to create the URL needed to request the  authorization code. The AuthUrl is bound to our webview so if we set the authorization url in the constructor our webview will start working right away:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="kt">string</span> <span class="n">_currentCSRFToken</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="nf">LoginViewModel</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">AuthUrl</span> <span class="p">=</span> <span class="nf">CreateAuthUrl</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">private</span> <span class="n">UrlWebViewSource</span> <span class="n">authUrl</span><span class="p">;</span>
+<span class="k">public</span> <span class="n">UrlWebViewSource</span> <span class="n">AuthUrl</span>
+<span class="p">{</span>
+    <span class="k">get</span> <span class="p">{</span> <span class="k">return</span> <span class="n">authUrl</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">set</span> <span class="p">{</span> <span class="nf">SetProperty</span><span class="p">(</span><span class="k">ref</span> <span class="n">authUrl</span><span class="p">,</span> <span class="k">value</span><span class="p">);</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">private</span> <span class="n">UrlWebViewSource</span> <span class="nf">CreateAuthUrl</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">UrlWebViewSource</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">authorizeRequest</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">AuthorizeRequest</span><span class="p">(</span><span class="n">ApiKeys</span><span class="p">.</span><span class="n">AuthorizeUrl</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">dic</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;();</span>
+    <span class="n">dic</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"client_id"</span><span class="p">,</span> <span class="n">ApiKeys</span><span class="p">.</span><span class="n">ClientId</span><span class="p">);</span>
+    <span class="n">dic</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"response_type"</span><span class="p">,</span> <span class="s">"Assertion"</span><span class="p">);</span>
+    <span class="n">dic</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"scope"</span><span class="p">,</span> <span class="n">ApiKeys</span><span class="p">.</span><span class="n">Scope</span><span class="p">);</span>
+    <span class="n">dic</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"redirect_uri"</span><span class="p">,</span> <span class="n">ApiKeys</span><span class="p">.</span><span class="n">RedirectUrl</span><span class="p">);</span>
+    <span class="n">_currentCSRFToken</span> <span class="p">=</span> <span class="n">Guid</span><span class="p">.</span><span class="nf">NewGuid</span><span class="p">().</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"N"</span><span class="p">);</span>
+    <span class="n">dic</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"state"</span><span class="p">,</span> <span class="n">_currentCSRFToken</span><span class="p">);</span>
+    <span class="n">result</span><span class="p">.</span><span class="n">Url</span> <span class="p">=</span> <span class="n">authorizeRequest</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="n">dic</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In the request I added the key response_type with value Assertion. If you read the Microsoft documentation you need to provide that parameter.
+The state key is added as CSRF token (Cross-Site Request Forgery Token) so we can verify if the callback is really a callback for the request we made.  The other keys come from our configuration file.</p>
+
+<h3 id="check-the-redirect-url">Check the Redirect URL</h3>
+<p>Now we need to verify if the webview redirects towards our redirect url. As we bound the source of the webview, we can verify in our viewmodel if that property changed.</p>
+
+<p>Change the constructor:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="nf">LoginViewModel</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">AuthUrl</span> <span class="p">=</span> <span class="nf">CreateAuthUrl</span><span class="p">();</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">PropertyChanged</span> <span class="p">+=</span> <span class="n">ViewModel_PropertyChanged</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now you need to verify if the AuthUrl property was changed and if it matches with our RedirectUrl. Next create a AuthorizeResponse object (found in the Identitymodel lib) from the url we got back and verify the CSRFToken via the state property.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">async</span> <span class="k">void</span> <span class="nf">ViewModel_PropertyChanged</span><span class="p">(</span><span class="kt">object</span> <span class="n">sender</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">ComponentModel</span><span class="p">.</span><span class="n">PropertyChangedEventArgs</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">PropertyName</span> <span class="p">==</span> <span class="k">nameof</span><span class="p">(</span><span class="n">AuthUrl</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">url</span> <span class="p">=</span> <span class="n">AuthUrl</span><span class="p">.</span><span class="n">Url</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">url</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="n">ApiKeys</span><span class="p">.</span><span class="n">RedirectUrl</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">authorizeResponse</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">AuthorizeResponse</span><span class="p">(</span><span class="n">url</span><span class="p">);</span>
+            <span class="kt">var</span> <span class="n">state</span> <span class="p">=</span> <span class="s">""</span><span class="p">;</span>
+            <span class="n">authorizeResponse</span><span class="p">.</span><span class="n">Values</span><span class="p">.</span><span class="nf">TryGetValue</span><span class="p">(</span><span class="s">"state"</span><span class="p">,</span> <span class="k">out</span> <span class="n">state</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">state</span> <span class="p">==</span> <span class="n">_currentCSRFToken</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="c1">// Request Access Token</span>
+            <span class="p">}</span>
+            <span class="k">else</span>
+            <span class="p">{</span>
+                <span class="c1">// Log CSRF token doesn't match.</span>
+            <span class="p">}</span>
+	        <span class="n">MessagingCenter</span><span class="p">.</span><span class="n">Send</span><span class="p">&lt;</span><span class="n">LoginViewModel</span><span class="p">&gt;(</span><span class="k">this</span><span class="p">,</span> <span class="n">MessageKeys</span><span class="p">.</span><span class="n">NavigateToMain</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="request-an-access-token">Request an access token</h3>
+
+<p>The last thing we need to do is use the authorization code from the authorizeResponse to request an access token. For that we’ll use the TokenClient class from identitymodel. We add all the necessary info via key/value pairs and send the request. Our tokens will come back in a tokenResponse object.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">keyValues</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;();</span>
+                <span class="n">keyValues</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"client_assertion_type"</span><span class="p">,</span> <span class="s">"urn:ietf:params:oauth:client-assertion-type:jwt-bearer"</span><span class="p">);</span>
+                <span class="n">keyValues</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"client_assertion"</span><span class="p">,</span> <span class="n">ApiKeys</span><span class="p">.</span><span class="n">ClientSecret</span><span class="p">);</span>
+                <span class="n">keyValues</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"grant_type"</span><span class="p">,</span> <span class="s">"urn:ietf:params:oauth:grant-type:jwt-bearer"</span><span class="p">);</span>
+                <span class="n">keyValues</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"assertion"</span><span class="p">,</span> <span class="n">authorizeResponse</span><span class="p">.</span><span class="n">Code</span><span class="p">);</span>
+                <span class="n">keyValues</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"redirect_uri"</span><span class="p">,</span> <span class="n">ApiKeys</span><span class="p">.</span><span class="n">RedirectUrl</span><span class="p">);</span>
+
+                <span class="kt">var</span> <span class="n">tokenclient</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">TokenClient</span><span class="p">(</span><span class="n">ApiKeys</span><span class="p">.</span><span class="n">AccessTokenUrl</span><span class="p">);</span>
+                <span class="kt">var</span> <span class="n">tokenResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">tokenclient</span><span class="p">.</span><span class="nf">RequestAsync</span><span class="p">(</span><span class="n">keyValues</span><span class="p">);</span>
+
+                <span class="n">App</span><span class="p">.</span><span class="n">User</span><span class="p">.</span><span class="n">AccessToken</span> <span class="p">=</span> <span class="n">tokenResponse</span><span class="p">.</span><span class="n">AccessToken</span><span class="p">;</span>
+                <span class="n">App</span><span class="p">.</span><span class="n">User</span><span class="p">.</span><span class="n">RefreshToken</span> <span class="p">=</span> <span class="n">tokenResponse</span><span class="p">.</span><span class="n">RefreshToken</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="close-the-webview">Close the webview</h3>
+<p>Now that we have our access and refresh token we can close our webview and navigate back towards our app.</p>
+
+<h2 id="download">Download</h2>
+<p>Download the code from my <a href="https://github.com/jtourlamain/DevProtocol.Xam.Demos.AuthDemo">Github</a></p>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/mobile/">mobile</a>, 
+				
+			
+				
+				<a href="/tag/oauth2/">oauth2</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

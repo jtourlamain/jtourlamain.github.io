@@ -1,0 +1,521 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Use appsettings in a Giraffe web app – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Use appsettings in a Giraffe web app – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Use appsettings in a Giraffe web app – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Use appsettings in a Giraffe web app</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">April 19, 2018</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2018/04/Giraffe.png" alt="Use appsettings in a Giraffe web app">
+	</div>
+	
+	<div class="post-content">
+		<p>During the learning of F# the inevitable question arises on how to use the language for your day to day tasks. You can create a web site using F# using the Giraffe framework. The framework can be found on github. The most amazing part that I found is their <a href="https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md">documentation</a>. A lot can be found to get you started. A missing piece in tutorials is how to use an appsettings.json file with the Giraffe framework, and that’s what this post is about.</p>
+
+<h2 id="installing-the-net-core-giraffe-template">Installing the .net core Giraffe template</h2>
+
+<p>We’ll start of by installing the Giraffe template:
+You can verify if the template is already installed by opening a command prompt and execute</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new
+</code></pre></div></div>
+
+<p>This will give you a list of all installed .net core templates.</p>
+
+<p>If you don’t have the template yet, you can install it via:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new <span class="nt">-i</span> <span class="s2">"giraffe-template::*"</span>
+</code></pre></div></div>
+
+<h2 id="quick-start-to-create-a-solution">Quick start to create a solution</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new giraffe <span class="nt">-V</span> razor <span class="nt">-lang</span> F# <span class="nt">--name</span> DevProtocol.Giraffe.SettingsDemo.Web
+<span class="nb">cd </span>src
+dotnet new sln <span class="nt">--name</span> DevProtocol.Giraffe.SettingsDemo
+dotnet sln add DevProtocol.Giraffe.SettingsDemo.Web/DevProtocol.Giraffe.SettingsDemo.Web.fsproj
+</code></pre></div></div>
+
+<h3 id="organize-your-project">Organize your project</h3>
+
+<p>The template will get you up and running with Giraffe, but I like to organize the things a bit. By default all application logic can be found in the Program.fs file. I like to separate the routing and the http handling. 
+Remove the indexHandler and webApp method from your Program.fs file.</p>
+
+<p><img src="/assets/images/2018/04/getOrganized.png" alt="organize" /></p>
+
+<ul>
+  <li>Add a file Routing.fs above Program.fs</li>
+  <li>Add HttpHandler.fs above Routing.fs</li>
+</ul>
+
+<p><em>Note: If you’re using Visual Studio 2017 you can move the files up and down via ALT+arrow</em></p>
+
+<h3 id="add-routes">Add routes</h3>
+
+<p>Add a default route in your Routing.fs file</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Giraffe</span><span class="p">.</span><span class="nn">SettingsDemo</span><span class="p">.</span><span class="nn">Web</span><span class="p">.</span><span class="nc">Routing</span>
+
+<span class="k">open</span> <span class="nc">Giraffe</span>
+<span class="k">open</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Giraffe</span><span class="p">.</span><span class="nn">SettingsDemo</span><span class="p">.</span><span class="nn">Web</span><span class="p">.</span><span class="nc">HttpHandlers</span>
+
+<span class="k">let</span> <span class="n">routes</span><span class="p">:</span> <span class="nc">HttpFunc</span> <span class="p">-&gt;</span> <span class="nc">HttpFunc</span> <span class="p">=</span>
+    <span class="n">choose</span> <span class="p">[</span>
+        <span class="nc">GET</span> <span class="o">&gt;=&gt;</span>
+            <span class="n">choose</span> <span class="p">[</span>
+                <span class="n">route</span> <span class="s2">"/"</span> <span class="o">&gt;=&gt;</span> <span class="n">indexHandler</span>
+            <span class="p">]</span>
+        <span class="n">setStatusCode</span> <span class="mi">404</span> <span class="o">&gt;=&gt;</span> <span class="n">text</span> <span class="s2">"Not Found"</span> <span class="p">]</span>
+</code></pre></div></div>
+
+<p>The configuration of the routes is nearly identical to the route configuration of Suave (another popular F# web framework).</p>
+
+<h2 id="add-a-httphandler">Add a httpHandler</h2>
+
+<p>In the HttpHandler.fs file we need to define the indexHandler:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Giraffe</span><span class="p">.</span><span class="nn">SettingsDemo</span><span class="p">.</span><span class="nn">Web</span><span class="p">.</span><span class="nc">HttpHandlers</span>
+
+<span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">AspNetCore</span><span class="p">.</span><span class="nc">Http</span>
+<span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Extensions</span><span class="p">.</span><span class="nc">Configuration</span>
+<span class="k">open</span> <span class="nc">Giraffe</span>
+<span class="k">open</span> <span class="nn">Giraffe</span><span class="p">.</span><span class="nc">Razor</span>
+<span class="k">open</span> <span class="nn">DevProtocol</span><span class="p">.</span><span class="nn">Giraffe</span><span class="p">.</span><span class="nn">SettingsDemo</span><span class="p">.</span><span class="nn">Web</span><span class="p">.</span><span class="nc">Models</span>
+
+<span class="k">let</span> <span class="n">indexHandler</span> <span class="p">=</span>
+    <span class="k">fun</span> <span class="p">(</span><span class="n">next</span><span class="p">:</span> <span class="nc">HttpFunc</span><span class="p">)</span> <span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nc">HttpContext</span><span class="p">)</span> <span class="p">-&gt;</span>
+        <span class="k">let</span> <span class="n">greetings</span> <span class="p">=</span> <span class="n">sprintf</span> <span class="s2">"Hello from Giraffe!"</span> 
+        <span class="k">let</span> <span class="n">model</span>     <span class="p">=</span> <span class="p">{</span> <span class="nc">Text</span> <span class="p">=</span> <span class="n">greetings</span> <span class="p">}</span>
+        <span class="n">razorHtmlView</span> <span class="s2">"Index"</span> <span class="n">model</span> <span class="n">next</span> <span class="n">ctx</span>
+</code></pre></div></div>
+
+<h2 id="adding-the-appsettingsjson">Adding the appsettings.json</h2>
+
+<p>Add a appsettings.json file to your project containing</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"Greeting"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hello from appsettings"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>Make sure the file is copied to the output directory
+In visual studio change the properties of the file to copy to output if newer. Or in VSCode open the fsproj file and verify the ItemGroup:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;Content</span> <span class="na">Include=</span><span class="s">"appsettings.json"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;CopyToOutputDirectory&gt;</span>PreserveNewest<span class="nt">&lt;/CopyToOutputDirectory&gt;</span>
+    <span class="nt">&lt;/Content&gt;</span>
+  <span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<p>Add the NuGet package</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Microsoft.Extensions.Configuration.Json
+</code></pre></div></div>
+
+<p>So if you use VSCode add the following to your fsproj file:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Extensions.Configuration.Json"</span> <span class="na">Version=</span><span class="s">"2.0.1"</span> <span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<p>In your Program.fs file you’ll find the main method. You’ll notice that the WebHostBuilder is configured in that method. We’ll add the <em>ConfigureAppConfiguration</em> there:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[&lt;</span><span class="nc">EntryPoint</span><span class="p">&gt;]</span>
+<span class="k">let</span> <span class="n">main</span> <span class="p">_</span> <span class="p">=</span>
+    <span class="k">let</span> <span class="n">contentRoot</span> <span class="p">=</span> <span class="nn">Directory</span><span class="p">.</span><span class="nc">GetCurrentDirectory</span><span class="bp">()</span>
+    <span class="k">let</span> <span class="n">webRoot</span>     <span class="p">=</span> <span class="nn">Path</span><span class="p">.</span><span class="nc">Combine</span><span class="p">(</span><span class="n">contentRoot</span><span class="p">,</span> <span class="s2">"WebRoot"</span><span class="p">)</span>
+    <span class="nc">WebHostBuilder</span><span class="bp">()</span>
+        <span class="p">.</span><span class="nc">UseKestrel</span><span class="bp">()</span>
+        <span class="p">.</span><span class="nc">UseContentRoot</span><span class="p">(</span><span class="n">contentRoot</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">UseIISIntegration</span><span class="bp">()</span>
+        <span class="p">.</span><span class="nc">UseWebRoot</span><span class="p">(</span><span class="n">webRoot</span><span class="p">)</span>
+<span class="c1">// Add the ConfigureAppConfiguration method</span>
+        <span class="p">.</span><span class="nc">ConfigureAppConfiguration</span><span class="p">(</span><span class="n">configureAppConfiguration</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">Configure</span><span class="p">(</span><span class="nc">Action</span><span class="p">&lt;</span><span class="nc">IApplicationBuilder</span><span class="p">&gt;</span> <span class="n">configureApp</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">ConfigureServices</span><span class="p">(</span><span class="n">configureServices</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">ConfigureLogging</span><span class="p">(</span><span class="n">configureLogging</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">Build</span><span class="bp">()</span>
+        <span class="p">.</span><span class="nc">Run</span><span class="bp">()</span>
+    <span class="mi">0</span>
+</code></pre></div></div>
+
+<p>Now we need to configure what this ConfigureAppConfiguration does:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">configureAppConfiguration</span>  <span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="nc">WebHostBuilderContext</span><span class="p">)</span> <span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nc">IConfigurationBuilder</span><span class="p">)</span> <span class="p">=</span>
+    <span class="n">config</span>
+        <span class="p">.</span><span class="nc">AddJsonFile</span><span class="p">(</span><span class="s2">"appsettings.json"</span><span class="p">,</span><span class="bp">false</span><span class="p">,</span><span class="bp">true</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">AddJsonFile</span><span class="p">(</span><span class="n">sprintf</span> <span class="s2">"appsettings.%s.json"</span> <span class="n">context</span><span class="p">.</span><span class="nn">HostingEnvironment</span><span class="p">.</span><span class="nc">EnvironmentName</span> <span class="p">,</span><span class="bp">true</span><span class="p">)</span>
+        <span class="p">.</span><span class="nc">AddEnvironmentVariables</span><span class="bp">()</span> <span class="p">|&gt;</span> <span class="n">ignore</span>
+</code></pre></div></div>
+
+<p>The first AddJsonFile method says that the appsettings.json file is not optional (so mandatory). The second AddJsonFile method says that the appsettings.[environment].json file is optional (so it will be used if available). The result is that we now get access to the IConfiguration via the HttpContext</p>
+
+<p>And finally add an open statement:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="nn">Microsoft</span><span class="p">.</span><span class="nn">Extensions</span><span class="p">.</span><span class="nc">Configuration</span>
+</code></pre></div></div>
+
+<h2 id="using-the-appsettings">Using the appsettings</h2>
+
+<p>Now we can use our appsettings in our httpHandlers. Our indexHandler functions has access to the HttpContext. So all we need to do is get an IConfiguration from it and request our Greeting setting:</p>
+
+<div class="language-fsharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">indexHandler</span> <span class="p">=</span>
+    <span class="k">fun</span> <span class="p">(</span><span class="n">next</span><span class="p">:</span> <span class="nc">HttpFunc</span><span class="p">)</span> <span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nc">HttpContext</span><span class="p">)</span> <span class="p">-&gt;</span>
+        <span class="k">let</span> <span class="n">settings</span> <span class="p">=</span> <span class="n">ctx</span><span class="p">.</span><span class="nc">GetService</span><span class="p">&lt;</span><span class="nc">IConfiguration</span><span class="o">&gt;()</span>
+        <span class="k">let</span> <span class="n">model</span>     <span class="p">=</span> <span class="p">{</span> <span class="nc">Text</span> <span class="p">=</span> <span class="s2">"Giraffe demo: "</span> <span class="o">+</span> <span class="n">settings</span><span class="o">.[</span><span class="s2">"Greeting"</span><span class="p">]</span> <span class="p">}</span>
+        <span class="n">razorHtmlView</span> <span class="s2">"Index"</span> <span class="n">model</span> <span class="n">next</span> <span class="n">ctx</span>
+</code></pre></div></div>
+
+<p>You should now be able to run the app and seeing the content of the Greeting</p>
+
+<p><img src="/assets/images/2018/04/appssettings.png" alt="app settings" /></p>
+
+<p>The transformations of the appsettings files will work as expected. Add another appsettings file “appsettings.Development.json”, make sure the file is copied to the output directory. Change the Greetings value:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"Greeting"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hello from DEV appsettings"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/images/2018/04/appssettingsDevelopment.png" alt="dev app settings" /></p>
+
+<h2 id="download">Download</h2>
+
+<p>Download the code from <a href="https://github.com/jtourlamain/DevProtocol.Giraffe.SettingsDemo">my github</a></p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Giraffe framework: <a href="https://github.com/giraffe-fsharp/Giraffe">https://github.com/giraffe-fsharp/Giraffe</a></li>
+  <li>Giraffe documentation: <a href="https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md">https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md</a></li>
+  <li>Suave.io: <a href="https://suave.io/">https://suave.io/</a></li>
+</ul>
+
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/fsharp/">fsharp</a>, 
+				
+			
+				
+				<a href="/tag/giraffe/">giraffe</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>

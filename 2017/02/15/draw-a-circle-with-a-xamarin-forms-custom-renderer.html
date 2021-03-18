@@ -1,0 +1,482 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Draw a circle with a Xamarin Forms custom renderer – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Draw a circle with a Xamarin Forms custom renderer – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="http://0.0.0.0:4000">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Draw a circle with a Xamarin Forms custom renderer – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="http://0.0.0.0:4000" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="http://0.0.0.0:4000/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Draw a circle with a Xamarin Forms custom renderer</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">February 15, 2017</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2017/02/circleDotAnim.gif" alt="Draw a circle with a Xamarin Forms custom renderer">
+	</div>
+	
+	<div class="post-content">
+		<p>Xamarin Forms is getting better with each iteration, there’s no doubt about that. We have more controls at our disposal than Win32 devs started with. If it doesn’t fit our needs you can use effects. Changing a BoxView into a circle seems to be possible, but felt a bit wrong. With Xamarin Forms we can still use native implementations with custom renderers.</p>
+
+<h2 id="creating-a-custom-control">Creating a custom control</h2>
+<p>First you create a custom control so you can use it in your PCL where your XAML lives. As I don’t use the BoxView to start with I inherited from a View. Next add the bindable properties you want to set via your XAML. So I added 2 color properties and 1 property that enables the circle to draw as active (it uses the fillcolor for that) or inactive (just the stroke).</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">CircleDot</span><span class="p">:</span> <span class="n">View</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">readonly</span> <span class="n">BindableProperty</span> <span class="n">FillColorProperty</span> <span class="p">=</span>
+		   <span class="n">BindableProperty</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">FillColor</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">Color</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">CircleDot</span><span class="p">),</span> <span class="n">Color</span><span class="p">.</span><span class="n">Black</span><span class="p">);</span>
+
+    <span class="k">public</span> <span class="n">Color</span> <span class="n">FillColor</span>
+    <span class="p">{</span>
+        <span class="k">get</span> <span class="p">{</span> <span class="k">return</span> <span class="p">(</span><span class="n">Color</span><span class="p">)</span><span class="nf">GetValue</span><span class="p">(</span><span class="n">FillColorProperty</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">set</span> <span class="p">{</span> <span class="nf">SetValue</span><span class="p">(</span><span class="n">FillColorProperty</span><span class="p">,</span> <span class="k">value</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">readonly</span> <span class="n">BindableProperty</span> <span class="n">StrokeColorProperty</span> <span class="p">=</span>
+		   <span class="n">BindableProperty</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">StrokeColor</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">Color</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">CircleDot</span><span class="p">),</span> <span class="n">Color</span><span class="p">.</span><span class="n">Black</span><span class="p">);</span>
+
+    <span class="k">public</span> <span class="n">Color</span> <span class="n">StrokeColor</span>
+    <span class="p">{</span>
+        <span class="k">get</span> <span class="p">{</span> <span class="k">return</span> <span class="p">(</span><span class="n">Color</span><span class="p">)</span><span class="nf">GetValue</span><span class="p">(</span><span class="n">StrokeColorProperty</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">set</span> <span class="p">{</span> <span class="nf">SetValue</span><span class="p">(</span><span class="n">StrokeColorProperty</span><span class="p">,</span> <span class="k">value</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">readonly</span> <span class="n">BindableProperty</span> <span class="n">ActiveProperty</span> <span class="p">=</span>
+		  <span class="n">BindableProperty</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">Active</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="kt">bool</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">CircleDot</span><span class="p">),</span> <span class="k">false</span><span class="p">);</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="n">Active</span>
+    <span class="p">{</span>
+        <span class="k">get</span> <span class="p">{</span> <span class="k">return</span> <span class="p">(</span><span class="kt">bool</span><span class="p">)</span><span class="nf">GetValue</span><span class="p">(</span><span class="n">ActiveProperty</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">set</span> <span class="p">{</span> <span class="nf">SetValue</span><span class="p">(</span><span class="n">ActiveProperty</span><span class="p">,</span> <span class="k">value</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="creating-the-custom-renderer-files">Creating the custom renderer files</h2>
+<p>In our Android and iOS project we need a custom renderer class so our platforms knows how to render the CircleDot view we created.</p>
+
+<p>The class that you create in your Android or iOS project must inherit from ViewRenderer. The generic ViewRenderer expects two types the CircleDot view from our PCL and the native representation. For iOS this will be an UIView, for Android an Android.Views.View (not to confuse with a Xamarin Forms view).</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// For iOS:</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">CircleDotRenderer</span><span class="p">:</span> <span class="n">ViewRenderer</span><span class="p">&lt;</span><span class="n">CircleDot</span><span class="p">,</span> <span class="n">UIView</span><span class="p">&gt;</span>
+
+<span class="c1">// For Android </span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">CircleDotRenderer</span><span class="p">:</span> <span class="n">ViewRenderer</span><span class="p">&lt;</span><span class="n">CircleDot</span><span class="p">,</span> <span class="n">Android</span><span class="p">.</span><span class="n">Views</span><span class="p">.</span><span class="n">View</span><span class="p">&gt;</span>
+</code></pre></div></div>
+
+<p>We also need to register our custom renderer. Above the namespace of your custom renderer class add:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">assembly</span><span class="p">:</span> <span class="nf">ExportRenderer</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">CircleDot</span><span class="p">),</span> <span class="k">typeof</span><span class="p">(</span><span class="n">CircleDotRenderer</span><span class="p">))]</span>
+</code></pre></div></div>
+
+<h3 id="basic-android-custom-renderer">Basic Android custom renderer</h3>
+<p>For Android we need to tell the system that our control will draw itself via</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">this</span><span class="p">.</span><span class="nf">SetWillNotDraw</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Now we need to override the OnElementChanged and OnElementPropertyChanged methods. In the OnElementPropertyChanged we need to tell Android that if our ActiveProperty changed it needs to redraw itself:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnElementChanged</span><span class="p">(</span><span class="n">ElementChangedEventArgs</span><span class="p">&lt;</span><span class="n">CircleDot</span><span class="p">&gt;</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnElementChanged</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Control</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">circleDotView</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Android</span><span class="p">.</span><span class="n">Views</span><span class="p">.</span><span class="nf">View</span><span class="p">(</span><span class="n">Forms</span><span class="p">.</span><span class="n">Context</span><span class="p">);</span>
+        <span class="nf">SetNativeControl</span><span class="p">(</span><span class="n">circleDotView</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnElementPropertyChanged</span><span class="p">(</span><span class="kt">object</span> <span class="n">sender</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">ComponentModel</span><span class="p">.</span><span class="n">PropertyChangedEventArgs</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnElementPropertyChanged</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">PropertyName</span> <span class="p">==</span> <span class="n">CircleDot</span><span class="p">.</span><span class="n">ActiveProperty</span><span class="p">.</span><span class="n">PropertyName</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nf">Invalidate</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="basic-ios-custom-renderer">Basic iOS custom renderer</h3>
+<p>We need to override the OnElementChanged and OnElementPropertyChanged methods. In the OnElementPropertyChanged we need to tell iOS that if our ActiveProperty changed it needs to redraw itself:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnElementChanged</span><span class="p">(</span><span class="n">ElementChangedEventArgs</span><span class="p">&lt;</span><span class="n">CircleDot</span><span class="p">&gt;</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnElementChanged</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Control</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">circleDotView</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">UIView</span><span class="p">();</span>
+        <span class="nf">SetNativeControl</span><span class="p">(</span><span class="n">circleDotView</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnElementPropertyChanged</span><span class="p">(</span><span class="kt">object</span> <span class="n">sender</span><span class="p">,</span> <span class="n">PropertyChangedEventArgs</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">base</span><span class="p">.</span><span class="nf">OnElementPropertyChanged</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">PropertyName</span> <span class="p">==</span> <span class="n">CircleDot</span><span class="p">.</span><span class="n">ActiveProperty</span><span class="p">.</span><span class="n">PropertyName</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nf">SetNeedsDisplay</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>			
+</code></pre></div></div>
+
+<h2 id="creating-canvas-code">Creating canvas code</h2>
+<p>We still need to tell the custom renderers <strong>how</strong> the need to render/draw themselves.</p>
+
+<p>I must admit that I’m not an expert in drawing native things on a canvas. So, where did I start? I used a program named PaintCode to help me out.</p>
+
+<p><img src="/assets/images/2017/02/paintcode.png" alt="PaintCode" /></p>
+
+<p>When you’ve worked with Sketch, you’ll feel quickly at home with PaintCode. If you take a moment and watch their tutorials (<a href="https://www.paintcodeapp.com/tutorials">https://www.paintcodeapp.com/tutorials</a>) you’ll be up and running in no time.</p>
+
+<p>So I created a canvas (aha, sounds familiar for what we need for the custom renderers), draw a circle, defined two colors (ColorFill and ColorStroke) and linked them to the drawn circle. The last thing I did was creating a variable CircleDotActive and linked it to the visibility of the CircleDotFill object.</p>
+
+<p><img src="/assets/images/2017/02/PaintCodeCircleDotVisibility.png" alt="Link variable in PaintCode" /></p>
+
+<p>Don’t forget to embed your artefacts in a frame. It allows the circle to adapt itself to the available space of the custom control we’re creating.</p>
+
+<p>Now PaintCode will provide us the code we need to draw the CircleDot in iOS:</p>
+
+<p><img src="/assets/images/2017/02/PaintCodeCircleDotIosCode.png" alt="iOS generated code for our CircleDot" /></p>
+
+<p>The only thing we need to change (for iOS and for Android) is replacing the circleDotActive check with the bindable active property from our custom control:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//Replace</span>
+<span class="k">if</span><span class="p">(</span><span class="n">circleDotActive</span><span class="p">)</span>
+
+<span class="c1">//with</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">Element</span><span class="p">.</span><span class="n">Active</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>On iOS override the Draw method with the generated code.</p>
+
+<p>On Android things are a bit more difficult. PaintCode doesn’t generate Xamarin Android code but java code. Lucky for us the code is very similar!</p>
+
+<p>On Android override the OnDraw method with the generated java code and change some method names.</p>
+
+<h2 id="download">Download</h2>
+<p>Download the code from <a href="https://github.com/jtourlamain/DevProtocol.Xam.CircleDotDemo">my GitHub</a></p>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/mobile/">mobile</a>, 
+				
+			
+				
+				<a href="/tag/xamarin/">xamarin</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/12/application-insights-setup-for-dotnet-core-2-1.html" class="post-title">Application Insights setup for dotnet core 2.1</a>
+      <div class="date">August 12, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="http://0.0.0.0:4000">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>
