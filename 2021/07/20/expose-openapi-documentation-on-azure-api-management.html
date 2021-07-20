@@ -1,0 +1,469 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<!-- Page Info -->
+	<link rel="shortcut icon" href="/assets/images/favicon.ico">
+	<title>Expose openapi documentation on Azure API Management – DevProtocol</title>
+	<meta name="description" content="">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Expose openapi documentation on Azure API Management – DevProtocol">
+	<meta name="twitter:description" content="">
+	<meta name="twitter:image:src" content="https://www.devprotocol.com">
+
+	<!-- Facebook OpenGraph -->
+	<meta property="og:title" content="Expose openapi documentation on Azure API Management – DevProtocol" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="https://www.devprotocol.com" />
+
+	
+	<!-- Font Embed Code -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:300,400,600,700" rel="stylesheet">
+	
+
+	<!-- Styles -->
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400%7CRoboto+Slab' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css/screen.css">
+
+	<link rel="alternate" type="application/rss+xml"  href="https://www.devprotocol.com/feed.xml" title="DevProtocol">
+
+	
+	<!-- Custom Styles -->
+	<style></style>
+	
+
+	
+	<!-- Analytics Code -->
+	
+	
+
+	
+	<!-- Extra Header JS Code -->
+	
+	
+	
+</head>
+
+
+<body class="home-template">
+
+
+	<header class="main-header">
+	<div class="container">
+		<div class="row">
+		<div class="col-sm-12">
+			<a class="branding" href="/"><span class="mylogo">Dev</span>Protocol</a>
+		</div>
+		</div>
+	</div>
+</header>
+
+<nav class="main-navigation">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="navbar-header">
+					<span class="nav-toggle-button collapsed" data-toggle="collapse" data-target="#main-menu">
+					<span class="sr-only">Toggle navigation</span>
+					<i class="fa fa-bars"></i>
+					</span>
+				</div>
+				<div class="collapse navbar-collapse" id="main-menu">
+					<ul class="menu">
+						
+						<li class="nav-home" role="presentation"><a href="/">Home</a></li>
+						
+						<li class="nav-home" role="presentation"><a href="/about">About</a></li>
+						
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+	<section class="content-wrap">
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 main-content">
+
+					<article class="post">
+	<div class="post-head">
+		<h2 class="post-title">Expose openapi documentation on Azure API Management</h2>
+		<div class="post-meta">
+			
+			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
+			
+			<span class="date">July 20, 2021</span> &bull;
+			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
+		</div>
+	</div>
+	
+	<div class="featured-media">
+		<img src="/assets/images/2021/07/apim_openapi.png" alt="Expose openapi documentation on Azure API Management">
+	</div>
+	
+	<div class="post-content">
+		<p>Azure API management automatically exposes openapi documentation through the developer portal. But what if your company doesn’t activate the portal? This article describes how you can make the openapi documentation available through your API.</p>
+
+<h2 id="the-location-of-the-openapi-documentation">The location of the openapi documentation</h2>
+
+<p>Via the azure portal you can find the location of the openapi documentation. Go to your API, click on the ellipsis and export the definition:</p>
+
+<p><img src="/assets/images/2021/07/export_openapi.png" alt="export openapi" /></p>
+
+<p>Open the developer tools of your browser before you click on the desired format (in this article I”ll work with the OpenAPI v3 YAML)</p>
+
+<p><img src="/assets/images/2021/07/location_openapi.png" alt="location openapi" /></p>
+
+<p>So, the location is like</p>
+
+<p>https://management.azure.com/subscriptions/[<strong>subscriptionid</strong>]/resourceGroups/[<strong>resourcegroupname</strong>]/Microsoft.ApiManagement/service/[<strong>servicename</strong>]/apis/[<strong>apiid</strong>]?export=true&amp;format=openapi&amp;api-version=2021-01-01-preview</p>
+
+<p>There are 4 unique parts in this url:</p>
+
+<ul>
+  <li>subscriptionid: the azure subscription id where your APIM service is running</li>
+  <li>resourcegroupname: The resource group where your APIM service is running</li>
+  <li>servicename: The name of the APIM service</li>
+  <li>apiid: The id of the API</li>
+</ul>
+
+<h2 id="no-management-api">No management API</h2>
+
+<p>After seeing the url you might thing you need to enable the Management API of your APIM service. However, the management API starts with yourapimservicename.management.azure-api.net. The url we got in the previous step is a general management url. So we don’t not need to enable the specific management API to get our openapi documentation.</p>
+
+<p><img src="/assets/images/2021/07/no_management_api.png" alt="no management API" /></p>
+
+<p>Keep in mind that the management API of your apim service enables admin-level access on your APIM instance, so please avoid enabling it.</p>
+
+<h2 id="authenticate-via-managed-identity">Authenticate via Managed identity</h2>
+
+<p>To call the url with the openapi documentation, we need to be authenticated. Enable managed identity on your APIM service</p>
+
+<p><img src="/assets/images/2021/07/apim_managed_identity.png" alt="enable managed identity" /></p>
+
+<p>Now, our APIM service has an identity, but it still doesn’t have the rights to call the url.</p>
+
+<p>In the same window where you enabled managed identity, you can click on “Azure role assignments”. Give your managed identity the “API Management Service Reader Role” on Resource group level.</p>
+
+<p><img src="/assets/images/2021/07/apim_reader_role.png" alt="apim reader role" /></p>
+
+<p>or via powershell:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$resourceGroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-AzResourceGroup</span><span class="w"> </span><span class="nt">-Name</span><span class="w"> </span><span class="s2">"the-apim-resourcegroup-name"</span><span class="w">
+</span><span class="n">New-AzRoleAssignment</span><span class="w"> </span><span class="nt">-ObjectId</span><span class="w"> </span><span class="s2">"the-managed-idendentity-of-your-apim"</span><span class="w"> </span><span class="nt">-RoleDefinitionName</span><span class="w"> </span><span class="s2">"API Management Service Reader Role"</span><span class="w"> </span><span class="nt">-Scope</span><span class="w"> </span><span class="nv">$resourceGroup</span><span class="o">.</span><span class="nf">ResourceId</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="define-a-documentation-endpoint">Define a documentation endpoint</h2>
+
+<p>Now you want to define a documentation endpoint where people can download the openapi spec.
+On our api, we’ll add an endpoint openapi.yaml. If your API has a baseUrl like https://your-apim-instance.azure-api.net/person/v1 we want the openapi documentation file be available on https://your-apim-instance.azure-api.net/person/v1/openapi.yaml</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ResourceGroupName</span><span class="o">=</span><span class="s1">'the-apim-resourcegroup-name'</span><span class="w">
+</span><span class="nv">$apiId</span><span class="o">=</span><span class="s1">'person-api-v1'</span><span class="w"> </span><span class="c"># this one corresponds with the apiid you found in the url of the first step</span><span class="w">
+</span><span class="nv">$openApiOperationId</span><span class="o">=</span><span class="s1">'get-openapi-yaml'</span><span class="w">
+</span><span class="nv">$apimService</span><span class="o">=</span><span class="n">Get-AzResource</span><span class="w"> </span><span class="nt">-ResourceType</span><span class="w"> </span><span class="s2">"Microsoft.ApiManagement/service"</span><span class="w"> </span><span class="nt">-ResourceGroupName</span><span class="w"> </span><span class="nv">$ResourceGroupName</span><span class="w">
+</span><span class="nv">$apimCtx</span><span class="o">=</span><span class="n">New-AzApiManagementContext</span><span class="w"> </span><span class="nt">-ResourceGroupName</span><span class="w"> </span><span class="nv">$ResourceGroupName</span><span class="w"> </span><span class="nt">-ServiceName</span><span class="w"> </span><span class="nv">$apimService</span><span class="o">.</span><span class="nf">Name</span><span class="w">
+</span><span class="nx">Get-AzApiManagementOperation</span><span class="w"> </span><span class="nt">-Context</span><span class="w"> </span><span class="nv">$apimCtx</span><span class="w"> </span><span class="nt">-ApiId</span><span class="w"> </span><span class="nv">$apiId</span><span class="w"> </span><span class="nt">-OperationId</span><span class="w"> </span><span class="nv">$openApiOperationId</span><span class="w"> </span><span class="nt">-ErrorVariable</span><span class="w"> </span><span class="nx">openApiSpecNotPresent</span><span class="w"> </span><span class="nt">-ErrorAction</span><span class="w"> </span><span class="nx">SilentlyContinue</span><span class="w">
+</span><span class="kr">if</span><span class="p">(</span><span class="nv">$openApiSpecNotPresent</span><span class="p">)</span><span class="w">
+</span><span class="p">{</span><span class="w">
+    </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Create endpoint for openapi spec on openapi.yaml"</span><span class="w">
+    </span><span class="n">New-AzApiManagementOperation</span><span class="w"> </span><span class="nt">-Context</span><span class="w"> </span><span class="nv">$apimCtx</span><span class="w"> </span><span class="nt">-ApiId</span><span class="w"> </span><span class="nv">$apiId</span><span class="w"> </span><span class="nt">-OperationId</span><span class="w"> </span><span class="nv">$openApiOperationId</span><span class="w"> </span><span class="nt">-Name</span><span class="w"> </span><span class="s1">'openapi'</span><span class="w"> </span><span class="nt">-Method</span><span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="nt">-UrlTemplate</span><span class="w"> </span><span class="s1">'openapi.yaml'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="kr">else</span><span class="p">{</span><span class="w">
+    </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Endpoint for openapi spec openapi.yaml already exists"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="the-policy-to-call-the-openapi-documentation">The policy to call the openapi documentation</h2>
+
+<p>The last thing we need to do is add a policy file on our “get-openapi-yaml” operation to call the url we found in the first step. We’ll make the 4 unique parts of the url dynamic so we can reuse the policy:</p>
+
+<ul>
+  <li>subscriptionid: we’ll replace it with an APIM named value {{azure-subscriptionid}}</li>
+  <li>resourcegroupname: we’ll replace it with an APIM named value {{azure-resourcegroup}}</li>
+  <li>servicename: is available in the context of your policy file via context.Deployment.ServiceName</li>
+  <li>apiid: is available in the context of your policy file via context.Api.Id</li>
+</ul>
+
+<p>As the call needs to be authenticated, we’ll add the policy authentication-managed-identity and ask access to https://management.azure.com/</p>
+
+<p>The policy file looks like:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;policies&gt;</span>
+    <span class="nt">&lt;inbound&gt;</span>
+        <span class="nt">&lt;base</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;send-request</span> <span class="na">mode=</span><span class="s">"new"</span> <span class="na">response-variable-name=</span><span class="s">"result"</span> <span class="na">timeout=</span><span class="s">"300"</span> <span class="na">ignore-error=</span><span class="s">"false"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;set-url&gt;</span>@("https://management.azure.com/subscriptions/{{azure-subscriptionid}}/resourceGroups/{{azure-resourcegroup}}/providers/Microsoft.ApiManagement/service/" + context.Deployment.ServiceName + "/apis/" + context.Api.Id + "?export=true<span class="err">&amp;</span>format=openapi<span class="err">&amp;</span>api-version=2021-01-01-preview")<span class="nt">&lt;/set-url&gt;</span>
+            <span class="nt">&lt;set-method&gt;</span>GET<span class="nt">&lt;/set-method&gt;</span>
+            <span class="nt">&lt;authentication-managed-identity</span> <span class="na">resource=</span><span class="s">"https://management.azure.com/"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/send-request&gt;</span>
+        <span class="nt">&lt;return-response&gt;</span>
+            <span class="nt">&lt;set-status</span> <span class="na">code=</span><span class="s">"200"</span> <span class="na">reason=</span><span class="s">"OK"</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;set-header</span> <span class="na">name=</span><span class="s">"Content-Type"</span> <span class="na">exists-action=</span><span class="s">"override"</span><span class="nt">&gt;</span>
+                <span class="nt">&lt;value&gt;</span>application/yaml<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;/set-header&gt;</span>
+            <span class="nt">&lt;set-body&gt;</span>@((string)(((IResponse)context.Variables["result"]).Body.As<span class="nt">&lt;JObject&gt;</span>()["value"]))<span class="nt">&lt;/set-body&gt;</span>
+        <span class="nt">&lt;/return-response&gt;</span>
+    <span class="nt">&lt;/inbound&gt;</span>
+    <span class="nt">&lt;backend&gt;</span>
+        <span class="nt">&lt;base</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/backend&gt;</span>
+    <span class="nt">&lt;outbound&gt;</span>
+        <span class="nt">&lt;base</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/outbound&gt;</span>
+    <span class="nt">&lt;on-error&gt;</span>
+        <span class="nt">&lt;base</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/on-error&gt;</span>
+<span class="nt">&lt;/policies&gt;</span>
+</code></pre></div></div>
+
+<p>The only thing left is link the policy file with the openapi.yaml endpoint:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Set-AzApiManagementPolicy</span><span class="w"> </span><span class="nt">-Context</span><span class="w"> </span><span class="nv">$apimCtx</span><span class="w"> </span><span class="nt">-ApiId</span><span class="w"> </span><span class="s1">'person-api-v1'</span><span class="w"> </span><span class="nt">-OperationId</span><span class="w"> </span><span class="s1">'get-openapi-yaml'</span><span class="w"> </span><span class="nt">-PolicyFilePath</span><span class="w"> </span><span class="s1">'openapispec.policy.xml'</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>It is possible to expose your openapi documentation via an API call. Again, Managed Identity helped me out to expose services in a secure way. No need to enable the admin-level Management API or hassle with SAS tokens.
+The policy that handles the request can be reused for all your APIs.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/get-azapimanagement?view=azps-6.2.1">Microsoft docs on API management with powershell</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/azure/api-management/api-management-authentication-policies">Microsoft docs on authentication policies</a></li>
+</ul>
+
+	</div>
+	<footer class="post-footer clearfix">
+		<div class="pull-left tag-list">
+			<i class="fa fa-folder-open-o"></i>
+			
+			
+				
+				<a href="/tag/azure/">azure</a>
+				
+			
+		</div>
+
+	</footer>
+</article>
+<div class="comment-wrap">
+	
+<div class="disqus-container">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devprotocol.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</div>
+
+
+
+				</div>
+
+				<div class="col-md-4 sidebar">
+        <div class="widget">
+        <h4 class="title">Follow</h4>
+        <div class="content">
+            <ul class="social">
+                <!-- start social links -->
+                <li><a href="https://be.linkedin.com/in/jantourlamain"><i class="fa fa-linkedin"></i></a></li>
+                <li><a href="https://github.com/jtourlamain"><i class="fa fa-github"></i></a></li>
+                <li><a href="/feed.xml"><i class="fa fa-rss"></i></a></li>
+                <!-- end social links -->
+            </ul>
+        </div>
+    </div>
+    <div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2021/07/20/expose-openapi-documentation-on-azure-api-management.html" class="post-title">Expose openapi documentation on Azure API Management</a>
+      <div class="date">July 20, 2021</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+  </div>
+</div>
+	    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="main-footer">
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget">
+    <h4 class="title">Recent Post</h4>
+	<div class="content recent-post">
+        
+    <div class="recent-single-post">
+      <a href="/2021/07/20/expose-openapi-documentation-on-azure-api-management.html" class="post-title">Expose openapi documentation on Azure API Management</a>
+      <div class="date">July 20, 2021</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2020/01/28/use-policy-expressions-with-named-values-in-azure-api-management.html" class="post-title">Use policy expressions with named values in Azure API management</a>
+      <div class="date">January 28, 2020</div>
+      </div>
+      
+    <div class="recent-single-post">
+      <a href="/2019/08/15/use-your-private-linked-arm-templates-with-ease.html" class="post-title">Use your private linked ARM templates with ease</a>
+      <div class="date">August 15, 2019</div>
+      </div>
+      
+  </div>
+</div>
+			</div>
+			<div class="col-sm-4">
+				    <div class="widget">
+        <h4 class="title">Tags</h4>
+        <div class="content tag-cloud">
+            
+            
+            <a href="/tag/alm/">alm</a>
+            
+            <a href="/tag/azure/">azure</a>
+            
+            <a href="/tag/devops/">devops</a>
+            
+            <a href="/tag/docker/">docker</a>
+            
+            <a href="/tag/dotnet/">dotnet</a>
+            
+            <a href="/tag/fsharp/">fsharp</a>
+            
+            <a href="/tag/giraffe/">giraffe</a>
+            
+            <a href="/tag/mobile/">mobile</a>
+            
+            <a href="/tag/o365/">o365</a>
+            
+            <a href="/tag/oauth2/">oauth2</a>
+            
+            <a href="/tag/other/">other</a>
+            
+            <a href="/tag/powershell/">powershell</a>
+            
+            <a href="/tag/productivity/">productivity</a>
+            
+            <a href="/tag/reactiveui/">reactiveui</a>
+            
+            <a href="/tag/xamarin/">xamarin</a>
+            
+        </div>
+    </div>
+			</div>
+			<div class="col-sm-4">
+				&nbsp;
+			</div>
+			
+		
+		</div>
+	</div>
+
+</footer>
+
+
+<div class="copyright">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				Copyright &copy; 2021, <a href="https://www.devprotocol.com">DevProtocol</a>.  All Right Reserved
+			</div>
+		</div>
+	</div>
+</div>
+<a href="#" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+
+
+	
+	<!-- Extra Footer JS Code -->
+	
+	
+
+
+</body>
+
+</html>
