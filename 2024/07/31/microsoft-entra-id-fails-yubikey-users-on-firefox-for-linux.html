@@ -9,17 +9,17 @@
 
 	<!-- Page Info -->
 	<link rel="shortcut icon" href="/assets/images/favicon.ico">
-	<title>Use your private linked ARM templates with ease – DevProtocol</title>
+	<title>Microsoft Entra ID fails YubiKey users on Firefox for Linux – DevProtocol</title>
 	<meta name="description" content="">
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image">
-	<meta name="twitter:title" content="Use your private linked ARM templates with ease – DevProtocol">
+	<meta name="twitter:title" content="Microsoft Entra ID fails YubiKey users on Firefox for Linux – DevProtocol">
 	<meta name="twitter:description" content="">
 	<meta name="twitter:image:src" content="https://www.devprotocol.com">
 
 	<!-- Facebook OpenGraph -->
-	<meta property="og:title" content="Use your private linked ARM templates with ease – DevProtocol" />
+	<meta property="og:title" content="Microsoft Entra ID fails YubiKey users on Firefox for Linux – DevProtocol" />
 	<meta property="og:description" content="" />
 	<meta property="og:image" content="https://www.devprotocol.com" />
 
@@ -100,55 +100,55 @@
 
 					<article class="post">
 	<div class="post-head">
-		<h2 class="post-title">Use your private linked ARM templates with ease</h2>
+		<h2 class="post-title">Microsoft Entra ID fails YubiKey users on Firefox for Linux</h2>
 		<div class="post-meta">
 			
 			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
 			
-			<span class="date">August 15, 2019</span> &bull;
+			<span class="date">July 31, 2024</span> &bull;
 			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
 		</div>
 	</div>
 	
 	<div class="featured-media">
-		<img src="/assets/images/2019/08/arm.png" alt="Use your private linked ARM templates with ease">
+		<img src="/assets/images/2024/07/entraid_firefox_fail.png" alt="Microsoft Entra ID fails YubiKey users on Firefox for Linux">
 	</div>
 	
 	<div class="post-content">
-		<p>Everyone that worked with ARM templates knows that they are error prone. More often than not it’s a struggle get them right. So, if you don’t want your team to wonder if that 6th floor window isn’t an easier way out, you provide them reusable templates. One problem with linked templates is that they must be publicly available. As not all companies want their resources be publicly exposed, you need to find another way.
-<!--more-->
-As you want to use ARM templates, I assume you’re already working with Azure. It’s kind of logical you want to store your ARM templates in Azure as well.</p>
+		<p>We all know the statements that Microsoft made about linux. They love Linux. They even wrote a <a href="https://www.microsoft.com/en-us/windows-server/blog/2015/05/06/microsoft-loves-linux/">blogpost</a> about it. But that love falls short when you use Firefox on Linux. In my research on identity and access management, I have been exploring various login options. One of the approaches I tested is passwordless login using technologies like WebAuthn and YubiKey support. 
+I experimented with this on various operating systems, browsers and Identity Providers, including Microsoft Entra ID.
+<!--more--></p>
 
-<h2 id="put-your-arm-templates-in-azure-storage">Put your ARM templates in Azure storage</h2>
+<h2 id="the-problem">The Problem</h2>
 
-<p>Create an Azure storage account. Create a blob container and make sure you set the “Public access level” to “Private (no anonymous access)</p>
+<p>Normaly you are presented with a prompt to allow you to choose other sign-in options:</p>
 
-<p><img src="/assets/images/2019/08/linkedArmtemplates00.png" alt="private blob" /></p>
+<p><img src="/assets/images/2024/07/webauthn_signin_options.png" alt="Sign-in options" /></p>
 
-<p>Once the container is created you can upload all your reusable ARM templates. <a href="/2019/05/10/arm-your-devpipe-with-calm.html">In a previous post you can verify how I set up reusable and linked templates</a>.</p>
+<p>When loading the web page on a linux distribution, I was presented with the following options:</p>
 
-<h2 id="inject-a-sas-token-in-your-azure-devops-pipeline">Inject a SAS token in your Azure DevOps pipeline</h2>
+<p><img src="/assets/images/2024/07/webauthn_entraId_signin_options_firefox.png" alt="Sign-in options" /></p>
 
-<p>To access the private blob files, you can use a SAS token. A SAS token can be generated for your CD pipeline by adding a simple Azure Powershell script:</p>
+<p>Where was the option to use my YubiKey to login? I was sure it once worked fine in Linux on Firefox. I tried another Linux distribution and was presented with the same problem.</p>
 
-<pre><code class="language-ps1">Set-AzCurrentStorageAccount -ResourceGroupName "&lt;name-of-your-resource-group&gt;" -Name "&lt;name-of-your-storage-account&gt;"
-$token = New-AzStorageContainerSASToken -Name "&lt;name-of-the-private-blob-container&gt;" -Permission r -ExpiryTime (Get-Date).AddMinutes(30.0)
-Write-Host ("##vso[task.setvariable variable=infra_armTemplateToken;issecret=true;]$token")
-</code></pre>
+<h2 id="the-search">The search</h2>
 
-<p>The script generates a token and inject the variable <strong>$(infra_armTemplateToken)</strong> in your DevOps pipeline so you can use it in your ARM deployment task.
-Notice that the token is only valid for 30 minutes. 
-Please note that your Service Principle (used by your Azure DevOps) needs to have access on the resource group where the storage account lives.</p>
+<p>My first thought was that it was a problem with the YubiKey. I tried another YubiKey, but the problem persisted.
+I installed the Chrome browser as it is the popular browser. On Chrome I was presented with the correct options, was able to choose the YubiKey and login successfully.</p>
 
-<p>If you get the error
-<em>[error]The term ‘Set-AzCurrentStorageAccount’ is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</em> 
-You can solve it by using the Azure Powershell Task version 4 (currently in preview)</p>
+<p>I verified on the Yubico website <a href="https://support.yubico.com/hc/en-us/articles/360016615020-Operating-system-and-web-browser-support-for-FIDO2-and-U2F">Operating system and web browser support for FIDO2 and U2F </a> and found that the YubiKey is supported on Firefox on Linux.</p>
 
-<h2 id="references">References</h2>
+<p>So, why was I not able to login using my YubiKey on Linux using Firefox to login on Microsoft Entra ID? I did some digging on the microsoft website and found a user already asked the <a href="https://learn.microsoft.com/en-au/answers/questions/1762573/fido2-support-with-firefox-on-linux">question</a>. Microsoft states that they don’t support passwordless login on Firefox in Linux.</p>
 
-<ul>
-  <li><a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-linked-templates#securing-an-external-template">https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-linked-templates#securing-an-external-template</a></li>
-</ul>
+<h2 id="entra-id-blocks-firefox">Entra ID blocks Firefox</h2>
+
+<p>I still needed to find out if Firefox on Linux is capable of supporting Yubikey to login. I searched for the User Agent string that Chrome is using in their browser, and I changed the User Agent string in Firefox to match the one in Chrome.</p>
+
+<p><img src="/assets/images/2024/07/firefox_user_agent.png" alt="User Agent string" /></p>
+
+<p>Once I update the User Agent string in Firefox, I was able to login using my YubiKey on Microsoft Entra ID.</p>
+
+<p>Microsoft loves Linux, but only if you don’t use Firefox? I hope they update their support for Firefox on Linux soon.</p>
 
 	</div>
 	<footer class="post-footer clearfix">
@@ -157,15 +157,23 @@ You can solve it by using the Azure Powershell Task version 4 (currently in prev
 			
 			
 				
-				<a href="/tag/alm/">alm</a>, 
+				<a href="/tag/entraid/">entraid</a>, 
 				
 			
 				
-				<a href="/tag/azure/">azure</a>, 
+				<a href="/tag/linux/">linux</a>, 
 				
 			
 				
-				<a href="/tag/devops/">devops</a>
+				<a href="/tag/security/">security</a>, 
+				
+			
+				
+				<a href="/tag/webauthn/">webauthn</a>, 
+				
+			
+				
+				<a href="/tag/yubikey/">yubikey</a>
 				
 			
 		</div>
