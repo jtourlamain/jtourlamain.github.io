@@ -9,17 +9,17 @@
 
 	<!-- Page Info -->
 	<link rel="shortcut icon" href="/assets/images/favicon.ico">
-	<title>Use your private linked ARM templates with ease – DevProtocol</title>
+	<title>apim – DevProtocol</title>
 	<meta name="description" content="">
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image">
-	<meta name="twitter:title" content="Use your private linked ARM templates with ease – DevProtocol">
+	<meta name="twitter:title" content="apim – DevProtocol">
 	<meta name="twitter:description" content="">
 	<meta name="twitter:image:src" content="https://www.devprotocol.com">
 
 	<!-- Facebook OpenGraph -->
-	<meta property="og:title" content="Use your private linked ARM templates with ease – DevProtocol" />
+	<meta property="og:title" content="apim – DevProtocol" />
 	<meta property="og:description" content="" />
 	<meta property="og:image" content="https://www.devprotocol.com" />
 
@@ -98,106 +98,49 @@
 			<div class="row">
 				<div class="col-md-8 main-content">
 
-					<article class="post">
+					<div class="cover tag-cover">
+	<h3 class="tag-name">
+		Tag: apim
+	</h3>
+	<div class="post-count">
+		Total 1
+	</div>
+</div>	
+
+
+<article class="post">
 	<div class="post-head">
-		<h2 class="post-title">Use your private linked ARM templates with ease</h2>
+		<h2 class="post-title"><a href="/2023/06/30/expose-a-subset-of-your-openapi-spec-on-azure-apim.html">Expose a subset of your openapi spec on azure APIM</a></h2>
 		<div class="post-meta">
-			
-			<span class="author">By <a href="">Jan Tourlamain</a></span> &bull;
-			
-			<span class="date">August 15, 2019</span> &bull;
+			<span class="author">By <a href="/about">Jan Tourlamain</a></span> &bull;
+			<span class="date">June 30, 2023</span> &bull;
 			<span class="comment-count"><a href="#disqus_thread">0 Comments</a></span>
 		</div>
 	</div>
 	
 	<div class="featured-media">
-		<img src="/assets/images/2019/08/arm.png" alt="Use your private linked ARM templates with ease">
+		<a href="/2023/06/30/expose-a-subset-of-your-openapi-spec-on-azure-apim.html"><img src="/assets/images/2023/06/subsetopenapi.png" alt="Expose a subset of your openapi spec on azure APIM"></a>
 	</div>
 	
 	<div class="post-content">
-		<p>Everyone that worked with ARM templates knows that they are error prone. More often than not it’s a struggle get them right. So, if you don’t want your team to wonder if that 6th floor window isn’t an easier way out, you provide them reusable templates. One problem with linked templates is that they must be publicly available. As not all companies want their resources be publicly exposed, you need to find another way.
-<!--more-->
-As you want to use ARM templates, I assume you’re already working with Azure. It’s kind of logical you want to store your ARM templates in Azure as well.</p>
+		<p>Sometimes you don’t want to expose all the operations of your API on APIM. For example, you might have an API that has a lot of operations, but you only want to expose a subset of those operations on APIM. Or you might have an API that has operations that are not meant to be called by external consumers. In this post, I’ll show you how you can expose a subset of your openapi spec via Azure devops on APIM.</p>
 
-<h2 id="put-your-arm-templates-in-azure-storage">Put your ARM templates in Azure storage</h2>
-
-<p>Create an Azure storage account. Create a blob container and make sure you set the “Public access level” to “Private (no anonymous access)</p>
-
-<p><img src="/assets/images/2019/08/linkedArmtemplates00.png" alt="private blob" /></p>
-
-<p>Once the container is created you can upload all your reusable ARM templates. <a href="/2019/05/10/arm-your-devpipe-with-calm.html">In a previous post you can verify how I set up reusable and linked templates</a>.</p>
-
-<h2 id="inject-a-sas-token-in-your-azure-devops-pipeline">Inject a SAS token in your Azure DevOps pipeline</h2>
-
-<p>To access the private blob files, you can use a SAS token. A SAS token can be generated for your CD pipeline by adding a simple Azure Powershell script:</p>
-
-<pre><code class="language-ps1">Set-AzCurrentStorageAccount -ResourceGroupName "&lt;name-of-your-resource-group&gt;" -Name "&lt;name-of-your-storage-account&gt;"
-$token = New-AzStorageContainerSASToken -Name "&lt;name-of-the-private-blob-container&gt;" -Permission r -ExpiryTime (Get-Date).AddMinutes(30.0)
-Write-Host ("##vso[task.setvariable variable=infra_armTemplateToken;issecret=true;]$token")
-</code></pre>
-
-<p>The script generates a token and inject the variable <strong>$(infra_armTemplateToken)</strong> in your DevOps pipeline so you can use it in your ARM deployment task.
-Notice that the token is only valid for 30 minutes. 
-Please note that your Service Principle (used by your Azure DevOps) needs to have access on the resource group where the storage account lives.</p>
-
-<p>If you get the error
-<em>[error]The term ‘Set-AzCurrentStorageAccount’ is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.</em> 
-You can solve it by using the Azure Powershell Task version 4 (currently in preview)</p>
-
-<h2 id="references">References</h2>
-
-<ul>
-  <li><a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-linked-templates#securing-an-external-template">https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-linked-templates#securing-an-external-template</a></li>
-</ul>
-
+	</div>
+	<div class="post-permalink">
+		<a href="/2023/06/30/expose-a-subset-of-your-openapi-spec-on-azure-apim.html" class="btn btn-default">Continue Reading</a>
 	</div>
 	<footer class="post-footer clearfix">
 		<div class="pull-left tag-list">
+			
 			<i class="fa fa-folder-open-o"></i>
-			
-			
-				
-				<a href="/tag/alm/">alm</a>, 
-				
-			
-				
-				<a href="/tag/azure/">azure</a>, 
-				
-			
-				
-				<a href="/tag/devops/">devops</a>
-				
+			azure, apim, dotnet, devops
 			
 		</div>
-
+		<div class="pull-right share">
+			&nbsp;
+		</div>
 	</footer>
 </article>
-<div class="comment-wrap">
-	
-<div class="disqus-container">
-    <div id="disqus_thread"></div>
-    <script>
-        /**
-        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-        /*
-        var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-        };
-        */
-        (function() { // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        s.src = 'https://devprotocol.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-        })();
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-
-</div>
-
 
 
 				</div>
